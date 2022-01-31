@@ -5,6 +5,7 @@
 #include <common.h>
 #include <env.h>
 #include <i2c.h>
+#include <version.h>
 #include <linux/delay.h>
 #include <asm/io.h>
 #include <asm/system.h>
@@ -142,6 +143,8 @@ static void board_env_setup(void)
 
 	// Clear out scratch0 mode select bits
 	tegra_pmc_writel(scratch0 & ~PMC_SCRATCH0_MASK, offsetof(struct pmc_ctlr, pmc_scratch0));
+
+	env_set("blver", PLAIN_VERSION);
 }
 
 // This has nothing to do with a fan, but it gets called at the right time
