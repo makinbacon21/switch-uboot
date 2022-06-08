@@ -50,11 +50,15 @@
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
-	"preboot=if itest.l *0xA9FBFFFC == 0x33334C42; then " \
-		"env import -t 0xA9FC0000 0x20000; " \
+	"preboot=" \
+        "if itest.l *0xA9FBFFFC == 0x33334C42; then " \
+            "env import -t 0xA9FC0000 0x20000; " \
+        "fi;" \
         "run defines; " \
         "run setup_env; " \
-	"fi\0" \
+        "stdin=serial; " \
+        "stdout=serial; " \
+        "stderr=serial,vidconsole;\0" \
 	"set_variant=" \
         "if test ${t210b01} = 1; then setenv plat_info T210B01; else setenv plat_info T210; fi; " \
         /* V1 SWITCH */ \
