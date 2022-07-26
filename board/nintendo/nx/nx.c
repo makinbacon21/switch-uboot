@@ -107,6 +107,51 @@ static int get_sku(bool t210b01)
 	return NX_HW_TYPE_ODIN;
 }
 
+static void pmic_power_off_reset(void)
+{
+	struct udevice *dev;
+	uchar val;
+	int ret;
+
+	ret = i2c_get_chip_for_busnum(5, MAX77620_I2C_ADDR_7BIT, 1, &dev);
+	if (ret) {
+		debug("%s: Cannot find MAX77620 I2C chip\n", __func__);
+		return;
+	}
+
+	/* Set soft reset wake up reason */
+	ret = dm_i2c_read(dev, MAX77620_REG_ONOFF_CFG2, &val, 1);
+	if (ret)
+		debug("Failed to read ONOFF_CNFG2 register: %d\n", ret);
+
+	val |= BIT(7); /* SFT_RST_WK */
+	ret = dm_i2c_write(dev, MAX77620_REG_ONOFF_CFG2, &val, 1);
+	if (ret)
+		debug("Failed to write ONOFF_CNFG2: %d\n", ret);
+
+	/* Initiate power down sequence and generate a reset */
+	val = BIT(7);
+	ret = dm_i2c_write(dev, MAX77620_REG_ONOFF_CFG1, &val, 1);
+	if (ret)
+		debug("Failed to write ONOFF_CNFG1: %d\n", ret);
+}
+
+void reset_misc(void)
+{
+	/* r2p is not possible on T210B01, so do a full power off reboot */
+	if (tegra_get_chip_rev() == MAJORPREV_TEGRA210B01) {
+		pmic_power_off_reset();
+
+		mdelay(100);
+
+		/* If failed try a complete power off */
+		psci_system_off();
+	}
+
+	/* r2p reboot */
+	psci_system_reset();
+}
+
 static void set_pmic_type(void)
 {
 	const volatile void __iomem *rsvd_odm28 =
@@ -191,7 +236,10 @@ static void board_env_setup(void)
 			"Board will reboot in 10s..\n");
 		mdelay(10000);
 
-		psci_system_reset();
+		/* r2p is not possible so do a full power off reboot */
+		pmic_power_off_reset();
+
+        mdelay(100);
 
 		return;
 	}
