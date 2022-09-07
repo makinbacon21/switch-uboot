@@ -50,6 +50,55 @@
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
+    "address_parse=" \
+        "host_mac_addr=0xff; " \
+        /* load mac address info file from sd */ \
+        "if fatload mmc 1:1 0x90000000 switchroot/joycon_mac.bin; then " \
+            "if itest.b *0x90000000 == 0x01; then " \
+                "echo Left JoyCon is available; " \
+                "host_mac_addr=0x90000007; " \
+            "else " \
+                "echo Left JoyCon pairing info is not available!; " \
+            "fi; " \
+            "if itest.b *0x9000001d == 0x02; then " \
+                "echo Right JoyCon is available; " \
+                "host_mac_addr=0x90000024; " \
+            "else " \
+                "echo Right JoyCon pairing info is not available!; " \
+            "fi; " \
+        "fi; " \
+        "if itest.b $host_mac_addr == 0xff; then " \
+            "echo No JoyCons available; " \
+        "else " \
+            "echo Generating MAC addresses with JoyCon pairing info; " \
+            "bt_mac=\"\"; " \
+            "sep=\"\"; " \
+            "for i in 0 1 2 3 4 5 ; do " \
+                "setexpr x $host_mac_addr + $i; " \
+                "setexpr.b b *$x; " \
+                "if itest $b <= f; then " \
+                    /* There is no way to have leading zeros, so do this hack */ \
+                    "bt_mac=\"${bt_mac}${sep}0${b}\"; " \
+                    "echo bt_mac (a): ${bt_mac}; " \
+                "else " \
+                    "bt_mac=\"${bt_mac}${sep}${b}\"; " \
+                    "echo bt_mac (b): ${bt_mac}; " \
+                "fi; " \
+                "sep=\":\"; " \
+            "done; " \
+            "setexpr.b last_byte *0x90000005; " \
+            "if itest $last_byte == 0xFF; then " \
+                /* wrap around case */ \
+                "setexpr wifi_mac gsub \"(.*:.*:.*:.*:.*:).*\" \"\\100\" $bt_mac; " \
+            "else " \
+                "setexpr.b wb $last_byte + 1; " \
+                "if itest $wb <= f; then " \
+                    "setexpr wifi_mac gsub \"(.*:.*:.*:.*:.*:).*\" \"\\10$wb\" $bt_mac; " \
+                "else " \
+                    "setexpr wifi_mac gsub \"(.*:.*:.*:.*:.*:).*\" \"\\1$wb\" $bt_mac; " \
+                "fi; " \
+            "fi; " \
+        "fi;\0" \
 	"preboot=" \
         "if itest.l *0xA9FBFFFC == 0x33334C42; then " \
             "env import -t 0xA9FC0000 0x20000; " \
@@ -184,6 +233,13 @@
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
+        "echo parsing mac; " \
+        /* Set default macs, to be overridden by joycons */ \
+        "if test -n ${device_bt_mac}; then bt_mac=${device_bt_mac}; else run address_parse; fi; " \
+        "if test -n ${device_wifi_mac}; then wifi_mac=${device_wifi_mac}; else run address_parse; fi; " \
+        /* insert mac address dtb node */ \
+        "fdt set /chosen nvidia,wifi-mac ${wifi_mac}; " \
+        "fdt set /chosen nvidia,bluetooth-mac ${bt_mac}; " \
         "echo androidcon=${androidcon}; " \
 		"setenv bootargs ${bootargs} androidboot.console=${androidcon} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
 	"bootcmd_android=" \

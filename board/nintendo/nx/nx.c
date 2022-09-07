@@ -17,6 +17,14 @@
 #include <asm/arch-tegra/pmc.h>
 #include "../../nvidia/p2571/max77620_init.h"
 
+#define FUSE_BASE             0x7000F800
+#define FUSE_RESERVED_ODMX(x) (0x1C8 + 4 * (x))
+
+#define FUSE_OPT_LOT_CODE_0   0x208
+#define FUSE_OPT_WAFER_ID     0x210
+#define FUSE_OPT_X_COORDINATE 0x214
+#define FUSE_OPT_Y_COORDINATE 0x218
+
 void pin_mux_mmc(void)
 {
 	struct pmc_ctlr *const pmc = (struct pmc_ctlr *)NV_PA_PMC_BASE;
@@ -73,7 +81,6 @@ enum {
 	NX_HW_TYPE_FRIG
 };
 
-#define FUSE_RESERVED_ODMX(x) (0x1C8 + 4 * (x))
 static int get_sku(bool t210b01)
 {
 	const volatile void __iomem *odm4 = (void *)(NV_PA_FUSE_BASE + FUSE_RESERVED_ODMX(4));
@@ -97,6 +104,54 @@ static int get_sku(bool t210b01)
 	return NX_HW_TYPE_ODIN;
 }
 
+static void generate_and_set_serial(bool t210b01)
+{
+	const volatile void __iomem *opt_lot0 =
+				    (void *)(FUSE_BASE + FUSE_OPT_LOT_CODE_0);
+	const volatile void __iomem *opt_wafer =
+				    (void *)(FUSE_BASE + FUSE_OPT_WAFER_ID);
+	const volatile void __iomem *opt_x =
+				    (void *)(FUSE_BASE + FUSE_OPT_X_COORDINATE);
+	const volatile void __iomem *opt_y =
+				    (void *)(FUSE_BASE + FUSE_OPT_Y_COORDINATE);
+	u32 lot0 = readl(opt_lot0);
+	u32 wfxy = (readl(opt_wafer) << 18) | (readl(opt_x) << 9) | readl(opt_y);
+	char buf[32];
+
+	/* Generate serial number */
+	switch (get_sku(t210b01)) {
+	case NX_HW_TYPE_MODIN:
+		sprintf(buf, "NXM-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		break;
+
+	case NX_HW_TYPE_VALI:
+		sprintf(buf, "NXV-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		break;
+
+	case NX_HW_TYPE_FRIG:
+		sprintf(buf, "NXF-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		break;
+
+	case NX_HW_TYPE_ODIN:
+	default:
+		sprintf(buf, "NXO-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		break;
+	}
+
+	/* Set serial number to env */
+	env_set("device_serial", buf);
+
+	/* Generate default bluetooth mac address and set it to env */
+	sprintf(buf, "98:B6:E9:%02X:%02X:%02X",
+		(lot0 >> 16) & 0xFF, (lot0 >> 8) & 0xFF, (lot0 + 1) & 0xFF);
+	env_set("device_bt_mac", buf);
+
+	/* Generate default wifi mac address and set it to env */
+	sprintf(buf, "98:B6:E9:%02X:%02X:%02X",
+		(lot0 >> 16) & 0xFF, (lot0 >> 8) & 0xFF, (lot0 + 2) & 0xFF);
+	env_set("device_wifi_mac", buf);
+}
+
 #define SECURE_SCRATCH112_SETUP_DONE		0x34313254
 #define PMC_SCRATCH0_RECOVERY_MODE		(1 << 31)
 #define PMC_SCRATCH0_FASTBOOT_MODE		(1 << 30)
@@ -107,6 +162,9 @@ static void board_env_setup(void)
 	u32 scratch113 = tegra_pmc_readl(offsetof(struct pmc_ctlr, pmc_secure_scratch113));
 	bool t210b01 = tegra_get_chip_rev() == MAJORPREV_TEGRA210B01;
 	char sku[2] = { get_sku(t210b01) + '0', 0 };
+
+    /* Generate device serial and set it to env */
+    generate_and_set_serial(t210b01);
 
 	// If the mariko modchip is not initialized in a specific manner, things will hang.
 	// Scratch112 gets set to this specific value on known good modchip payloads.
