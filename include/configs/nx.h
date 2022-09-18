@@ -182,6 +182,11 @@
         "echo -e T210 Super Overclock enabled; " \
 	    "setenv bootargs ${bootargs} androidboot.oc=1; " \
         "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
+    "vali_vlim_overlay=" \
+        "echo VALI: voltage limits [${VLIM}, ${SOCLIM}]; " \
+        "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-voltage-limit-millivolt <0x$VLIM>; " \
+        "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-thermal-voltage-limit <0x$VLIM 0x$VLIM 0x$VLIM 0xFF0>; " \
+        "fdt set /i2c@7000c000/battery-gauge@36 maxim,kernel-maximum-soc <0x$SOCLIM>;\0" \
 	"display_overlay=" \
 		"if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
 		"elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
@@ -236,6 +241,7 @@
 		"if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
         "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
+        "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
         /* Set default macs, to be overridden by joycons */ \

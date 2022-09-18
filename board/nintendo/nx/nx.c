@@ -163,6 +163,7 @@ static void board_env_setup(void)
 	u32 scratch113 = tegra_pmc_readl(offsetof(struct pmc_ctlr, pmc_secure_scratch113));
 	bool t210b01 = tegra_get_chip_rev() == MAJORPREV_TEGRA210B01;
 	char sku[2] = { get_sku(t210b01) + '0', 0 };
+    u32 in_volt_lim = scratch113 >> 16;
 
     /* Generate device serial and set it to env */
     generate_and_set_serial(t210b01);
@@ -192,9 +193,35 @@ static void board_env_setup(void)
 
 	// Set charging limits for lite
 	if (get_sku(t210b01) == NX_HW_TYPE_VALI) {
-		//env_set_hex("VLIM", scratch113 >> 16);
+		env_set_hex("VLIM", in_volt_lim);
 
-		// TODO: Set soc limit
+        /* Set translated SOC */
+		switch (in_volt_lim) {
+		case 4192:
+			env_set_hex("SOCLIM", 90);
+			break;
+		case 4224:
+			env_set_hex("SOCLIM", 93);
+			break;
+		case 4240:
+			env_set_hex("SOCLIM", 94);
+			break;
+		case 4256:
+			env_set_hex("SOCLIM", 95);
+			break;
+		case 4272:
+			env_set_hex("SOCLIM", 97);
+			break;
+		case 4288:
+			env_set_hex("SOCLIM", 98);
+			break;
+		case 4304:
+			env_set_hex("SOCLIM", 99);
+			break;
+		default:
+			env_set_hex("SOCLIM", 100);
+			break;
+		}
 	}
 
 	// If kernel set reboot to recovery, then set a var for scripts to action on
