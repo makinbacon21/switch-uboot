@@ -17,6 +17,11 @@
 /* Board-specific serial config */
 #define CONFIG_TEGRA_ENABLE_UARTB
 
+#define BOARD_EXTRA_ENV_SETTINGS \
+	"preboot=if itest.l *0xA9FBFFFC == 0x33334C42; then " \
+		"env import -t 0xA9FC0000 0x20000; " \
+	"fi\0"
+
 #include "tegra-common-post.h"
 
 #endif /* _NX_H */
