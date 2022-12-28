@@ -15,30 +15,73 @@
 #define CONFIG_TEGRA_BOARD_STRING	"Nintendo Switch"
 
 /* Board-specific serial config */
+#define CONFIG_TEGRA_ENABLE_UARTA
 #define CONFIG_TEGRA_ENABLE_UARTB
+#define CONFIG_TEGRA_ENABLE_UARTC
 
 #define BOARD_EXTRA_ENV_SETTINGS \
+    "defines=" \
+        /* FDT IDS FOR VERIFICATION */ \
+        "setenv odin_id               0x4F44494E; " \
+        "setenv modin_id              0x4F44494F; " \
+        "setenv vali_id               0x56414C49; " \
+        "setenv frig_id               0x46524947; " \
+        /* STAGING ADDRESSES */ \
+        "setenv fdt_staging_addr      0x94000000; " \
+        "setenv boot_staging_addr     0x98000000; " \
+        "setenv recovery_staging_addr 0x98000000; " \
+        /* BOOTARGS FOR UART TYPES */ \
+        "setenv uarta_args            \"no_console_suspend console=ttyS0,115200,8n1 loglevel=8\"; " \
+        "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 loglevel=8\"; " \
+        "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 loglevel=8\"; " \
+        "setenv usblg_args            \"console=ttyGS0,115200,8n1 loglevel=8\"; " \
+        "setenv no_args               \"console=null loglevel=5\";\0" \
+    "setup_env=" \
+        "setenv boot_dir ${prefix}; " \
+        "test -n ${id}                   || setenv id SWR-AND; " \
+        "test -n ${emmc}                 || setenv emmc 0; " \
+        "test -n ${device_serial}        || mmc info device_serial; " \
+        "test -n ${uart_port}            || setenv uart_port 0; " \
+        "test -n ${reboot_action}        || setenv reboot_action bootloader; " \
+        "test -n ${autoboot}             || setenv autoboot 0; " \
+        "test -n ${autoboot_list}        || setenv autoboot_list 0; " \
+        "test -n ${usb3_enable}          || setenv usb3_enable 0; " \
+        "test -n ${4k60_disable}         || setenv 4k60_disable 0; " \
+        "test -n ${dvfsb}                || setenv dvfsb 0; " \
+        "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
+        "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
 	"preboot=if itest.l *0xA9FBFFFC == 0x33334C42; then " \
 		"env import -t 0xA9FC0000 0x20000; " \
+        "run defines; " \
+        "run setup_env; " \
 	"fi\0" \
 	"set_variant=" \
+        "if test ${t210b01} = 1; then setenv plat_info T210B01; else setenv plat_info T210; fi; " \
+        /* V1 SWITCH */ \
 		"if   test ${sku} = 0; then " \
-			"setenv dtid 0x4F44494E; " \
-			"setenv dtrev 0; " \
+			"setenv dtid ${odin_id}; " \
+			"setenv dtrev 0x0; " \
 			"setenv variant odin; " \
+        /* V2 SWITCH */ \
 		"elif test ${sku} = 1; then " \
-			"setenv dtid 0x4F44494E; " \
+			"setenv dtid ${modin_id}; " \
 			"setenv dtrev 0xb01; " \
 			"setenv variant modin;" \
+        /* SWITCH LITE */ \
 		"elif test ${sku} = 2; then " \
-			"setenv dtid 0x56414C49; " \
-			"setenv dtrev 0; " \
+			"setenv dtid ${vali_id}; " \
+			"setenv dtrev 0x0; " \
 			"setenv variant vali; " \
+        /* SWITCH OLED */ \
 		"elif test ${sku} = 3; then " \
-			"setenv dtid 0x46524947; " \
-			"setenv dtrev 0; " \
+			"setenv dtid ${frig_id}; " \
+			"setenv dtrev 0x0; " \
 			"setenv variant frig; " \
-		"fi\0" \
+		"fi; " \
+        "echo SKU: ${variant} REV: ${dtrev}; " \
+        "echo Serial: ${device_serial}; " \
+        "echo BT MAC: ${device_bt_mac}; " \
+        "echo WF MAC: ${device_wifi_mac};\0" \
 	"default_target=" \
 		"setenv mmcdev 1; " \
 		"setenv bootpart 0; " \
@@ -48,13 +91,41 @@
 		"mmc dev ${mmcdev};\0" \
 	"emmc_overlay=" \
 		"fdt set /sdhci@700b0600 status okay; " \
-		"fdt set /firmware/android boot_devices sdhci-tegra.3;\0" \
+		"fdt set /firmware/android boot_devices sdhci-tegra.3; " \
+        "echo using eMMC;\0" \
 	"sd_overlay=" \
 		"fdt set /firmware/android boot_devices sdhci-tegra.0;\0" \
-	"uart_overlay=" \
-		"fdt set /serial@70006040 compatible nvidia,tegra20-uart; " \
-		"fdt set /serial@70006040 status okay; " \
-		"fdt set /serial@70006040/joyconr status disabled;\0" \
+    "touch_overlay=" \
+        "setenv bootargs ${bootargs} \"ftm4.skip_tuning=1\";\0" \
+    "usb3_overlay=" \
+    	"echo USB3 disabled; " \
+	    "fdt get value DHANDLE_USB2 /xusb_padctl@7009f000/pads/usb2/lanes/usb2-0 phandle; " \
+	    "fdt set /xusb@70090000 phys <$DHANDLE_USB2>; " \
+	    "fdt set /xusb@70090000 phy-names usb2-0; " \
+	    "fdt set /xudc@700d0000 phys <$DHANDLE_USB2>; " \
+	    "fdt set /xudc@700d0000 phy-names usb2; " \
+	    "fdt set /xusb_padctl@7009f000 usb3-no-mapping-war <0x1>; " \
+	    "fdt set /xusb_padctl@7009f000/ports/usb2-0 nvidia,usb3-port-fake <0xffffffff>; " \
+	    "fdt set /xusb_padctl@7009f000/ports/usb3-0 status disabled;\0" \
+    "4k60_overlay=" \
+        "fdt set /i2c@7000c000/bm92t@18 rohm,dp-lanes <2>; " \
+        "echo 4K60 disabled;\0" \
+    "1bit_overlay=" \
+        "echo SD Card is initialized in 1-bit mode!; " \
+        "fdt set /sdhci@700b0000 bus-width <0x1>; " \
+        "fdt set /sdhci@700b0000 uhs-mask <0x7F>;\0" \
+    "dvfs_enable=" \
+        "echo DVFS B-Side enabled; " \
+	    "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2; " \
+        "if test ${sku} != 2; then; " \
+            /* 2397 MHz CPU and 1075 MHz GPU hard limit */ \
+            "fdt set /cpufreq/cpu-scaling-data max-frequency <0x249348>; " \
+            "fdt set /dvfs nvidia,gpu-max-freq-khz <0x106800>; " \
+        "else; " \
+            /* 2091 MHz CPU and 844 MHz GPU hard limit. Vali */ \
+            "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>; " \
+            "fdt set /dvfs nvidia,gpu-max-freq-khz <0xCE400>; " \
+        "fi;\0" \
 	"display_overlay=" \
 		"if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
 		"elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
@@ -65,48 +136,68 @@
 		"else echo Unknown Display ID: ${display_id}!; fi; " \
 		"if test -n ${DHANDLE}; then echo Setting Display panel; fdt set /host1x/dsi nvidia,active-panel <$DHANDLE>; fi\0" \
 	"get_fdt=" \
-		"setenv fdt_staging 0x94000000; " \
-		"part start mmc $mmcdev DTB dtb_start; " \
-		"part size mmc $mmcdev DTB dtb_size; " \
-		"mmc read $fdt_staging $dtb_start $dtb_size; " \
-		"adtimg addr $fdt_staging; " \
-		"adtimg get dt --id=${dtid} --rev=${dtrev} dtaddr dtsize dtidx; " \
+		"part start mmc ${mmcdev} DTB dtb_start; " \
+		"part size mmc ${mmcdev} DTB dtb_size; " \
+		"mmc read ${fdt_staging_addr} ${dtb_start} ${dtb_size}; " \
+		"adtimg addr ${fdt_staging_addr}; " \
+		"adtimg get dt --id=${dtid} dtaddr dtsize dtidx; " \
 		"cp.b ${dtaddr} ${fdt_addr_r} ${dtsize};" \
-		"fdt addr ${fdt_addr_r} ${dtsize};\0" \
+		"fdt addr ${fdt_addr_r} ${dtsize};" \
+        "fdt resize 16384\0" \
 	"bootcmd_common=" \
 		"run set_variant; " \
-		"setenv bootargs \"init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000\"; " \
-		"setenv bootargs \"${bootargs} firmware_class.path=/vendor/firmware pmc_r2p.reboot_action=via-payload pmc_r2p.enabled=1\"; " \
+		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000; " \
+		"setenv bootargs ${bootargs} firmware_class.path=/vendor/firmware pmc_r2p.reboot_action=via-${r2p_action} pmc_r2p.enabled=1; " \
 		"if test -n $useemmc; then run emmc_target; fi; " \
 		"run get_fdt; " \
 		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
-		"if test $uart_port = 2; then " \
-			"run uart_overlay; " \
-			"setenv bootargs \"${bootargs} no_console_suspend androidboot.console=ttyS1 console=ttyS1,115200,8n1\"; " \
-		"else " \
-			"setenv bootargs \"${bootargs} console=null\"; " \
-		"fi; " \
+        "echo uart port (debug): ${uart_port}; " \
+        "if test ${uart_port} = 1; then " \
+            "setenv bootargs \"${bootargs} ${uarta_args}\"; echo Enabled UART-A logging; " \
+            "fdt set /serial@70006000 compatible nvidia,tegra20-uart; " \
+            "fdt set /serial@70006000 status okay; " \
+            "if test -n ${androidcon}; then setenv androidcon ttyS0:${androidcon}; else setenv androidcon ttyS0; fi; " \
+        "elif test ${uart_port} = 2; then " \
+            "setenv bootargs \"${bootargs} ${uartb_args}\"; echo Enabled UART-B logging; " \
+            "fdt set /serial@70006040 compatible nvidia,tegra20-uart; " \
+            "fdt set /serial@70006040/joyconr status disabled; " \
+            "if test -n ${androidcon}; then setenv androidcon ttyS1:${androidcon}; else setenv androidcon ttyS1; fi; " \
+        "elif test ${uart_port} = 3; then " \
+            "setenv bootargs \"${bootargs} ${uartc_args}\"; echo Enabled UART-B logging; " \
+            "fdt set /serial@70006200 compatible nvidia,tegra20-uart; " \
+            "fdt set /serial@70006200/joycdonl status disabled; " \
+            "if test -n ${androidcon}; then setenv androidcon ttyS2:${androidcon}; else setenv androidcon ttyS2; fi; " \
+        "elif test ${uart_port} = 4; then " \
+            "echo Enabled USB Serial logging; " \
+            "setenv bootargs ${usblg} ${bootargs}; " \
+            "if test -n ${androidcon}; then setenv androidcon ttyGS0:${androidcon}; else setenv androidcon ttyGS0; fi; " \
+        "else; setenv bootargs \"${bootargs} ${no_args}\"; " \
+            "setenv androidcon \"\"; " \
+        "fi; " \
+        "if test ${4k60_disable} = 1; then run 4k60_overlay; fi; " \
+        "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
 		"if test ${sku} != 3; then run display_overlay; fi; " \
-		"mmc info serial#; " \
-		"setenv bootargs \"${bootargs} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${serial#} androidboot.modem=none androidboot.dtb_idx=${dtidx}\";\0" \
+        "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; fi; " \
+        "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
+        "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
+        "echo androidcon=${androidcon}; " \
+		"setenv bootargs ${bootargs} androidboot.console=${androidcon} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
 	"bootcmd_android=" \
-		"setenv boot_staging 0x98000000; " \
 		"part number mmc ${mmcdev} APP app_part_num; " \
 		"part uuid mmc ${mmcdev}:${app_part_num} app_part_uuid; " \
 		"part start mmc ${mmcdev} LNX lnx_start; " \
 		"part size mmc ${mmcdev} LNX lnx_size; " \
-		"mmc read $boot_staging $lnx_start $lnx_size; " \
-		"setenv bootargs \"skip_initramfs ro rootwait root=PARTUUID=${app_part_uuid} ${bootargs} bluetooth.disable_ertm=1\"; " \
-		"bootm $boot_staging $boot_staging $fdt_addr_r;\0" \
+		"mmc read ${boot_staging_addr} ${lnx_start} ${lnx_size}; " \
+		"setenv bootargs skip_initramfs ro rootwait root=PARTUUID=${app_part_uuid} ${bootargs} bluetooth.disable_ertm=1; " \
+		"bootm ${boot_staging_addr} ${boot_staging_addr} ${fdt_addr_r};\0" \
 	"bootcmd_recovery=" \
-		"setenv recovery_staging 0x98000000; " \
 		"part start mmc ${mmcdev} SOS recovery_start; " \
 		"part size mmc ${mmcdev} SOS recovery_size; " \
-		"mmc read $recovery_staging $recovery_start $recovery_size; " \
-		"bootm $recovery_staging $recovery_staging $fdt_addr_r;\0" \
+		"mmc read ${recovery_staging_addr} ${recovery_start} ${recovery_size}; " \
+		"bootm ${recovery_staging_addr} ${recovery_staging_addr} ${fdt_addr_r};\0" \
 	"bootcmd=" \
 		"run default_target; " \
-		"if test -n $uenvcmd; then " \
+		"if test -n ${uenvcmd}; then " \
 			"echo Running uenvcmd ...; " \
 			"run uenvcmd; " \
 		"else " \
@@ -117,7 +208,6 @@
 				"run bootcmd_android; " \
 			"fi; " \
 		"fi;\0"
-
 
 #include "tegra-common-post.h"
 
