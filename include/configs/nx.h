@@ -200,7 +200,7 @@
 	"bootcmd_common=" \
 		"run set_variant; " \
 		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000; " \
-		"setenv bootargs ${bootargs} firmware_class.path=/vendor/firmware pmc_r2p.reboot_action=via-${r2p_action} pmc_r2p.enabled=1; " \
+		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware pmc_r2p.reboot_action=via-${r2p_action} pmc_r2p.enabled=1; " \
 		"if test -n $useemmc; then run emmc_target; fi; " \
 		"run get_fdt; " \
 		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
