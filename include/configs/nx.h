@@ -222,7 +222,7 @@
             "if test -n ${androidcon}; then setenv androidcon ttyS2:${androidcon}; else setenv androidcon ttyS2; fi; " \
         "elif test ${uart_port} = 4; then " \
             "echo Enabled USB Serial logging; " \
-            "setenv bootargs ${usblg} ${bootargs}; " \
+            "setenv bootargs ${usblg_args} ${bootargs}; " \
             "if test -n ${androidcon}; then setenv androidcon ttyGS0:${androidcon}; else setenv androidcon ttyGS0; fi; " \
         "else; setenv bootargs \"${bootargs} ${no_args}\"; " \
             "setenv androidcon \"\"; " \
