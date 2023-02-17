@@ -42,7 +42,7 @@
         "test -n ${emmc}                 || setenv emmc 0; " \
         "test -n ${device_serial}        || mmc info device_serial; " \
         "test -n ${uart_port}            || setenv uart_port 0; " \
-        "test -n ${reboot_action}        || setenv reboot_action bootloader; " \
+        "test -n ${r2p_action}           || setenv r2p_action bootloader; " \
         "test -n ${autoboot}             || setenv autoboot 0; " \
         "test -n ${autoboot_list}        || setenv autoboot_list 0; " \
         "test -n ${usb3_enable}          || setenv usb3_enable 0; " \
@@ -200,7 +200,7 @@
 	"bootcmd_common=" \
 		"run set_variant; " \
 		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000; " \
-		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware pmc_r2p.reboot_action=via-${r2p_action} pmc_r2p.enabled=1; " \
+		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
 		"if test -n $useemmc; then run emmc_target; fi; " \
 		"run get_fdt; " \
 		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
