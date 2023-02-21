@@ -1,4 +1,6 @@
 /*
+ * (C) Copyright 2022-2023, CTCaer.
+ *
  * SPDX-License-Identifier:     GPL-2.0+
  */
 
@@ -18,13 +20,14 @@
 #include "../../nvidia/p2571/max77620_init.h"
 #include "pinmux-config-nx.h"
 
-#define FUSE_BASE             0x7000F800
-#define FUSE_RESERVED_ODMX(x) (0x1C8 + 4 * (x))
+#define FUSE_BASE                   0x7000F800
+#define FUSE_RESERVED_ODMX(x)       (0x1C8 + 4 * (x))
 
-#define FUSE_OPT_LOT_CODE_0   0x208
-#define FUSE_OPT_WAFER_ID     0x210
-#define FUSE_OPT_X_COORDINATE 0x214
-#define FUSE_OPT_Y_COORDINATE 0x218
+#define FUSE_OPT_LOT_CODE_0         0x208
+#define FUSE_OPT_WAFER_ID           0x210
+#define FUSE_OPT_X_COORDINATE       0x214
+#define FUSE_OPT_Y_COORDINATE       0x218
+#define FUSE_RESERVED_ODM28_T210B01 0x240
 
 void pin_mux_mmc(void)
 {
@@ -51,7 +54,6 @@ void pin_mux_mmc(void)
 	(void)readl(&pmc->pmc_pwr_det_val);
 
 	/* Turn on MAX77620 LDO2 to 3.3V for SD card power */
-	debug("%s: Set LDO2 for VDDIO_SDMMC_AP power to 3.3V\n", __func__);
 	ret = i2c_get_chip_for_busnum(5, MAX77620_I2C_ADDR_7BIT, 1, &dev);
 	if (ret) {
 		printf("%s: Cannot find MAX77620 I2C chip\n", __func__);
@@ -63,7 +65,7 @@ void pin_mux_mmc(void)
 	if (ret)
 		printf("Failed to enable 3.3V LDO for SD Card IO: %d\n", ret);
 
-	/* Disable LDO4 discharge for RTC power */
+	/* Disable LDO4 discharge for RTC power. Already disabled on T210B01. */
 	ret = dm_i2c_read(dev, MAX77620_CNFG2_L4_REG, &val, 1);
 	if (ret) {
 		printf("Failed to read LDO4 register: %d\n", ret);
@@ -103,6 +105,18 @@ static int get_sku(bool t210b01)
 	}
 
 	return NX_HW_TYPE_ODIN;
+}
+
+static void set_pmic_type(void)
+{
+	const volatile void __iomem *rsvd_odm28 =
+				    (void *)(FUSE_BASE + FUSE_RESERVED_ODM28_T210B01);
+
+	u32 odm28 = readl(rsvd_odm28);
+	if (odm28 & 1)
+		env_set("pmic_type", "0"); /* 0x33 211 phase config (retail) */
+	else
+		env_set("pmic_type", "1"); /* 0x31 31  phase config (devboard) */
 }
 
 static void generate_and_set_serial(bool t210b01)
@@ -190,6 +204,10 @@ static void board_env_setup(void)
 
 	// Set Display ID
 	env_set_hex("display_id", scratch113 & 0xFFFF);
+
+    // Set pmic type for T210b01
+	if (t210b01)
+		set_pmic_type();
 
 	// Set charging limits for lite
 	if (get_sku(t210b01) == NX_HW_TYPE_VALI) {
