@@ -20,6 +20,11 @@
 #define CONFIG_TEGRA_ENABLE_UARTC
 
 #define BOARD_EXTRA_ENV_SETTINGS \
+    /* Redirect consoles */ \
+    "stdin=serial\0" \
+    "stdout=serial\0" \
+    "stderr=serial,vidconsole\0" \
+    /* Defines for inline script */ \
     "defines=" \
         /* FDT IDS FOR VERIFICATION */ \
         "setenv odin_id               0x4F44494E; " \
