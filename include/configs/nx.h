@@ -216,7 +216,7 @@
             "fdt set /serial@70006040/joyconr status disabled; " \
             "if test -n ${androidcon}; then setenv androidcon ttyS1:${androidcon}; else setenv androidcon ttyS1; fi; " \
         "elif test ${uart_port} = 3; then " \
-            "setenv bootargs \"${bootargs} ${uartc_args}\"; echo Enabled UART-B logging; " \
+            "setenv bootargs \"${bootargs} ${uartc_args}\"; echo Enabled UART-C logging; " \
             "fdt set /serial@70006200 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006200/joycdonl status disabled; " \
             "if test -n ${androidcon}; then setenv androidcon ttyS2:${androidcon}; else setenv androidcon ttyS2; fi; " \
