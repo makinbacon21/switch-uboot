@@ -224,7 +224,7 @@
         "elif test ${uart_port} = 3; then " \
             "setenv bootargs \"${uartc_args} ${bootargs}\"; echo -e Enabled UART-C logging; " \
             "fdt set /serial@70006200 compatible nvidia,tegra20-uart; " \
-            "fdt set /serial@70006200/joycdonl status disabled; " \
+            "fdt set /serial@70006200/joyconl status disabled; " \
         /* USB Serial */ \
         "elif test ${uart_port} = 4; then " \
             "setenv bootargs \"${usblg_args} ${bootargs}\"; echo -e Enabled USB Serial logging; " \
