@@ -63,17 +63,17 @@
                 "echo Left JoyCon is available; " \
                 "host_mac_addr=0x90000007; " \
             "else " \
-                "echo Left JoyCon pairing info is not available!; " \
+                "echo -e Left JoyCon pairing info is not available!; " \
             "fi; " \
             "if itest.b *0x9000001d == 0x02; then " \
                 "echo Right JoyCon is available; " \
                 "host_mac_addr=0x90000024; " \
             "else " \
-                "echo Right JoyCon pairing info is not available!; " \
+                "echo -e Right JoyCon pairing info is not available!; " \
             "fi; " \
         "fi; " \
         "if itest.b $host_mac_addr == 0xff; then " \
-            "echo No JoyCons available; " \
+            "echo -e No JoyCons available; " \
         "else " \
             "echo Generating MAC addresses with JoyCon pairing info; " \
             "bt_mac=\"\"; " \
@@ -150,13 +150,13 @@
 	"emmc_overlay=" \
 		"fdt set /sdhci@700b0600 status okay; " \
 		"fdt set /firmware/android boot_devices sdhci-tegra.3; " \
-        "echo using eMMC;\0" \
+        "echo -e using eMMC;\0" \
 	"sd_overlay=" \
 		"fdt set /firmware/android boot_devices sdhci-tegra.0;\0" \
     "touch_overlay=" \
         "setenv bootargs ${bootargs} \"ftm4.skip_tuning=1\";\0" \
     "usb3_overlay=" \
-    	"echo USB3 disabled; " \
+    	"echo -e USB3 disabled; " \
 	    "fdt get value DHANDLE_USB2 /xusb_padctl@7009f000/pads/usb2/lanes/usb2-0 phandle; " \
 	    "fdt set /xusb@70090000 phys <$DHANDLE_USB2>; " \
 	    "fdt set /xusb@70090000 phy-names usb2-0; " \
@@ -167,13 +167,13 @@
 	    "fdt set /xusb_padctl@7009f000/ports/usb3-0 status disabled;\0" \
     "4k60_overlay=" \
         "fdt set /i2c@7000c000/bm92t@18 rohm,dp-lanes <2>; " \
-        "echo 4K60 disabled;\0" \
+        "echo -e 4K60 disabled;\0" \
     "1bit_overlay=" \
-        "echo SD Card is initialized in 1-bit mode!; " \
+        "echo -e SD Card is initialized in 1-bit mode!; " \
         "fdt set /sdhci@700b0000 bus-width <0x1>; " \
         "fdt set /sdhci@700b0000 uhs-mask <0x7F>;\0" \
     "dvfs_enable=" \
-        "echo DVFS B-Side enabled; " \
+        "echo -e DVFS B-Side enabled; " \
 	    "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2; " \
         "if test ${sku} != 2; then; " \
             /* 2397 MHz CPU and 1075 MHz GPU hard limit */ \
@@ -191,7 +191,7 @@
 		"elif test ${display_id} = 1020; then echo Display is INN 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-5-5 phandle; " \
 		"elif test ${display_id} = 1030; then echo Display is AUO 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-5-5 phandle; " \
 		"elif test ${display_id} = 1040; then echo Display is SHP 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-s-720p-5-5 phandle; " \
-		"else echo Unknown Display ID: ${display_id}!; fi; " \
+		"else echo -e Unknown Display ID: ${display_id}!; fi; " \
 		"if test -n ${DHANDLE}; then echo Setting Display panel; fdt set /host1x/dsi nvidia,active-panel <$DHANDLE>; fi\0" \
 	"get_fdt=" \
 		"part start mmc ${mmcdev} DTB dtb_start; " \
@@ -212,22 +212,22 @@
         "echo uart port (debug): ${uart_port}; " \
         /* UART-A (Onboard UART Port) */ \
         "if test ${uart_port} = 1; then " \
-            "setenv bootargs \"${uarta_args} ${bootargs}\"; echo Enabled UART-A logging; " \
+            "setenv bootargs \"${uarta_args} ${bootargs}\"; echo -e Enabled UART-A logging; " \
             "fdt set /serial@70006000 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006000 status okay; " \
         /* UART-B (Right JoyCon Rail) */ \
         "elif test ${uart_port} = 2; then " \
-            "setenv bootargs \"${uartb_args} ${bootargs}\"; echo Enabled UART-B logging; " \
+            "setenv bootargs \"${uartb_args} ${bootargs}\"; echo -e Enabled UART-B logging; " \
             "fdt set /serial@70006040 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006040/joyconr status disabled; " \
         /* UART-C (Left JoyCon Rail) */ \
         "elif test ${uart_port} = 3; then " \
-            "setenv bootargs \"${uartc_args} ${bootargs}\"; echo Enabled UART-C logging; " \
+            "setenv bootargs \"${uartc_args} ${bootargs}\"; echo -e Enabled UART-C logging; " \
             "fdt set /serial@70006200 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006200/joycdonl status disabled; " \
         /* USB Serial */ \
         "elif test ${uart_port} = 4; then " \
-            "setenv bootargs \"${usblg_args} ${bootargs}\"; echo Enabled USB Serial logging; " \
+            "setenv bootargs \"${usblg_args} ${bootargs}\"; echo -e Enabled USB Serial logging; " \
         /* No serial console */ \
         "else; " \
             "setenv bootargs \"${bootargs} ${no_args}\"; " \
@@ -238,7 +238,6 @@
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
-        "echo parsing mac; " \
         /* Set default macs, to be overridden by joycons */ \
         "if test -n ${device_bt_mac}; then bt_mac=${device_bt_mac}; else run address_parse; fi; " \
         "if test -n ${device_wifi_mac}; then wifi_mac=${device_wifi_mac}; else run address_parse; fi; " \
