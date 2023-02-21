@@ -15,9 +15,9 @@
 #define CONFIG_TEGRA_BOARD_STRING	"Nintendo Switch"
 
 /* Board-specific serial config */
-#define CONFIG_TEGRA_ENABLE_UARTA
-#define CONFIG_TEGRA_ENABLE_UARTB
-#define CONFIG_TEGRA_ENABLE_UARTC
+/* #define CONFIG_TEGRA_ENABLE_UARTA */
+/* #define CONFIG_TEGRA_ENABLE_UARTB */
+/* #define CONFIG_TEGRA_ENABLE_UARTC */
 
 #define BOARD_EXTRA_ENV_SETTINGS \
     /* Defines for inline script */ \
