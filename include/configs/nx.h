@@ -31,10 +31,10 @@
         "setenv boot_staging_addr     0x98000000; " \
         "setenv recovery_staging_addr 0x98000000; " \
         /* BOOTARGS FOR UART TYPES */ \
-        "setenv uarta_args            \"no_console_suspend console=ttyS0,115200,8n1 loglevel=8\"; " \
-        "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 loglevel=8\"; " \
-        "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 loglevel=8\"; " \
-        "setenv usblg_args            \"console=ttyGS0,115200,8n1 loglevel=8\"; " \
+        "setenv uarta_args            \"no_console_suspend console=ttyS0,115200,8n1 androidboot.console=ttyS0 loglevel=8\"; " \
+        "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 androidboot.console=ttyS1 loglevel=8\"; " \
+        "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 androidboot.console=ttyS2 loglevel=8\"; " \
+        "setenv usblg_args            \"console=ttyGS0,115200,8n1 androidboot.console=ttyGS0 loglevel=8\"; " \
         "setenv no_args               \"console=null loglevel=5\";\0" \
     "setup_env=" \
         "setenv boot_dir ${prefix}; " \
@@ -205,27 +205,27 @@
 		"run get_fdt; " \
 		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
         "echo uart port (debug): ${uart_port}; " \
+        /* UART-A (Onboard UART Port) */ \
         "if test ${uart_port} = 1; then " \
-            "setenv bootargs \"${bootargs} ${uarta_args}\"; echo Enabled UART-A logging; " \
+            "setenv bootargs \"${uarta_args} ${bootargs}\"; echo Enabled UART-A logging; " \
             "fdt set /serial@70006000 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006000 status okay; " \
-            "if test -n ${androidcon}; then setenv androidcon ttyS0:${androidcon}; else setenv androidcon ttyS0; fi; " \
+        /* UART-B (Right JoyCon Rail) */ \
         "elif test ${uart_port} = 2; then " \
-            "setenv bootargs \"${bootargs} ${uartb_args}\"; echo Enabled UART-B logging; " \
+            "setenv bootargs \"${uartb_args} ${bootargs}\"; echo Enabled UART-B logging; " \
             "fdt set /serial@70006040 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006040/joyconr status disabled; " \
-            "if test -n ${androidcon}; then setenv androidcon ttyS1:${androidcon}; else setenv androidcon ttyS1; fi; " \
+        /* UART-C (Left JoyCon Rail) */ \
         "elif test ${uart_port} = 3; then " \
-            "setenv bootargs \"${bootargs} ${uartc_args}\"; echo Enabled UART-C logging; " \
+            "setenv bootargs \"${uartc_args} ${bootargs}\"; echo Enabled UART-C logging; " \
             "fdt set /serial@70006200 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006200/joycdonl status disabled; " \
-            "if test -n ${androidcon}; then setenv androidcon ttyS2:${androidcon}; else setenv androidcon ttyS2; fi; " \
+        /* USB Serial */ \
         "elif test ${uart_port} = 4; then " \
-            "echo Enabled USB Serial logging; " \
-            "setenv bootargs ${usblg_args} ${bootargs}; " \
-            "if test -n ${androidcon}; then setenv androidcon ttyGS0:${androidcon}; else setenv androidcon ttyGS0; fi; " \
-        "else; setenv bootargs \"${bootargs} ${no_args}\"; " \
-            "setenv androidcon \"\"; " \
+            "setenv bootargs \"${usblg_args} ${bootargs}\"; echo Enabled USB Serial logging; " \
+        /* No serial console */ \
+        "else; " \
+            "setenv bootargs \"${bootargs} ${no_args}\"; " \
         "fi; " \
         "if test ${4k60_disable} = 1; then run 4k60_overlay; fi; " \
         "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
@@ -240,8 +240,7 @@
         /* insert mac address dtb node */ \
         "fdt set /chosen nvidia,wifi-mac ${wifi_mac}; " \
         "fdt set /chosen nvidia,bluetooth-mac ${bt_mac}; " \
-        "echo androidcon=${androidcon}; " \
-		"setenv bootargs ${bootargs} androidboot.console=${androidcon} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
+		"setenv bootargs ${bootargs} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
 	"bootcmd_android=" \
 		"part number mmc ${mmcdev} APP app_part_num; " \
 		"part uuid mmc ${mmcdev}:${app_part_num} app_part_uuid; " \
