@@ -36,11 +36,11 @@
         "setenv boot_staging_addr     0x98000000; " \
         "setenv recovery_staging_addr 0x98000000; " \
         /* BOOTARGS FOR UART TYPES */ \
-        "setenv uarta_args            \"no_console_suspend console=ttyS0,115200,8n1 androidboot.console=ttyS0 loglevel=8\"; " \
-        "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 androidboot.console=ttyS1 loglevel=8\"; " \
-        "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 androidboot.console=ttyS2 loglevel=8\"; " \
-        "setenv usblg_args            \"console=ttyGS0,115200,8n1 androidboot.console=ttyGS0 loglevel=8\"; " \
-        "setenv no_args               \"console=null loglevel=5\";\0" \
+        "setenv uarta_args            \"no_console_suspend console=ttyS0,115200,8n1 androidboot.console=ttyS0\"; " \
+        "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 androidboot.console=ttyS1\"; " \
+        "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 androidboot.console=ttyS2\"; " \
+        "setenv usblg_args            \"console=ttyGS0,115200,8n1 androidboot.console=ttyGS0\"; " \
+        "setenv no_args               \"console=null\";\0" \
     "setup_env=" \
         "setenv boot_dir ${prefix}; " \
         "test -n ${id}                   || setenv id SWR-AND; " \
@@ -204,8 +204,9 @@
         "fdt resize 16384\0" \
 	"bootcmd_common=" \
 		"run set_variant; " \
-		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000; " \
-		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
+		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000 loglevel=8; " \
+		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
+        "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
 		"if test -n $useemmc; then run emmc_target; fi; " \
 		"run get_fdt; " \
 		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
