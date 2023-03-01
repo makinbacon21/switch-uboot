@@ -16,6 +16,7 @@
 #include <asm/arch-tegra/gp_padctrl.h>
 #include <asm/arch-tegra/pmc.h>
 #include "../../nvidia/p2571/max77620_init.h"
+#include "pinmux-config-nx.h"
 
 #define FUSE_BASE             0x7000F800
 #define FUSE_RESERVED_ODMX(x) (0x1C8 + 4 * (x))
@@ -209,4 +210,19 @@ static void board_env_setup(void)
 void start_cpu_fan(void)
 {
 	board_env_setup();
+}
+
+/*
+ * Routine: pinmux_init
+ * Description: Do individual peripheral pinmux configs for UART A/B/C
+ */
+void pinmux_init(void)
+{
+	pinmux_clear_tristate_input_clamping();
+
+	gpio_config_table(nx_gpio_inits,
+			  ARRAY_SIZE(nx_gpio_inits));
+
+	pinmux_config_pingrp_table(nx_pingrps,
+				   ARRAY_SIZE(nx_pingrps));
 }
