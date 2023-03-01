@@ -20,10 +20,6 @@
 #define CONFIG_TEGRA_ENABLE_UARTC
 
 #define BOARD_EXTRA_ENV_SETTINGS \
-    /* Redirect consoles */ \
-    "stdin=serial\0" \
-    "stdout=serial\0" \
-    "stderr=serial,vidconsole\0" \
     /* Defines for inline script */ \
     "defines=" \
         /* FDT IDS FOR VERIFICATION */ \
@@ -109,10 +105,7 @@
             "env import -t 0xA9FC0000 0x20000; " \
         "fi;" \
         "run defines; " \
-        "run setup_env; " \
-        "stdin=serial; " \
-        "stdout=serial; " \
-        "stderr=serial,vidconsole;\0" \
+        "run setup_env;\0" \
 	"set_variant=" \
         "if test ${t210b01} = 1; then setenv plat_info T210B01; else setenv plat_info T210; fi; " \
         /* V1 SWITCH */ \
