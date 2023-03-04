@@ -122,20 +122,20 @@ static void generate_and_set_serial(bool t210b01)
 	/* Generate serial number */
 	switch (get_sku(t210b01)) {
 	case NX_HW_TYPE_MODIN:
-		sprintf(buf, "NXM-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		sprintf(buf, "%04X%08X%06X", 0x494F, (~lot0) & 0x3FFFFFFF, wfxy);
 		break;
 
 	case NX_HW_TYPE_VALI:
-		sprintf(buf, "NXV-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		sprintf(buf, "%04X%08X%06X", 0x4C49, (~lot0) & 0x3FFFFFFF, wfxy);
 		break;
 
 	case NX_HW_TYPE_FRIG:
-		sprintf(buf, "NXF-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		sprintf(buf, "%04X%08X%06X", 0x4947, (~lot0) & 0x3FFFFFFF, wfxy);
 		break;
 
 	case NX_HW_TYPE_ODIN:
 	default:
-		sprintf(buf, "NXO-%08X-%06X", (~lot0) & 0x3FFFFFFF, wfxy);
+		sprintf(buf, "%04X%08X%06X", 0x494E, (~lot0) & 0x3FFFFFFF, wfxy);
 		break;
 	}
 
