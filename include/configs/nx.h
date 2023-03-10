@@ -49,6 +49,7 @@
         "test -n ${usb3_enable}          || setenv usb3_enable 0; " \
         "test -n ${4k60_disable}         || setenv 4k60_disable 0; " \
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
+        "test -n ${odin_oc}              || setenv oc 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
     "address_parse=" \
@@ -167,7 +168,7 @@
         "fdt set /sdhci@700b0000 uhs-mask <0x7F>;\0" \
     "dvfs_enable=" \
         "echo -e DVFS B-Side enabled; " \
-	    "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2; " \
+	    "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2 androidboot.dvfsb=1; " \
         "if test ${sku} != 2; then; " \
             /* 2397 MHz CPU and 1075 MHz GPU hard limit */ \
             "fdt set /cpufreq/cpu-scaling-data max-frequency <0x249348>; " \
@@ -177,6 +178,10 @@
             "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>; " \
             "fdt set /dvfs nvidia,gpu-max-freq-khz <0xCE400>; " \
         "fi;\0" \
+    "dvfs_enable=" \
+        "echo -e T210 Super Overclock enabled; " \
+	    "setenv bootargs ${bootargs} androidboot.oc=1; " \
+        "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
 	"display_overlay=" \
 		"if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
 		"elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
@@ -197,7 +202,7 @@
         "fdt resize 16384\0" \
 	"bootcmd_common=" \
 		"run set_variant; " \
-		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x384000@0xf5a00000 loglevel=8; " \
+		"setenv bootargs init=/init nvdec_enabled=0 tegra_fbmem=0x800000@0xf5a00000 loglevel=8; " \
 		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
         "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
 		"if test -n $useemmc; then run emmc_target; fi; " \
@@ -230,6 +235,7 @@
         "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
 		"if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; fi; " \
+        "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
         /* Set default macs, to be overridden by joycons */ \
