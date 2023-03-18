@@ -178,7 +178,7 @@
             "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>; " \
             "fdt set /dvfs nvidia,gpu-max-freq-khz <0xCE400>; " \
         "fi;\0" \
-    "dvfs_enable=" \
+    "oc_enable=" \
         "echo -e T210 Super Overclock enabled; " \
 	    "setenv bootargs ${bootargs} androidboot.oc=1; " \
         "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
@@ -234,8 +234,8 @@
         "if test ${4k60_disable} = 1; then run 4k60_overlay; fi; " \
         "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
 		"if test ${sku} != 3; then run display_overlay; fi; " \
-        "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; fi; " \
-        "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; fi; " \
+        "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
+        "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
         /* Set default macs, to be overridden by joycons */ \
