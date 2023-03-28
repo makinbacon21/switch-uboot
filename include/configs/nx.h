@@ -42,6 +42,7 @@
         "test -n ${id}                   || setenv id SWR-AND; " \
         "test -n ${emmc}                 || setenv emmc 0; " \
         "test -n ${device_serial}        || mmc info device_serial; " \
+        "test -n ${fbconsole}            || setenv fbconsole 9; " \
         "test -n ${uart_port}            || setenv uart_port 0; " \
         "test -n ${r2p_action}           || setenv r2p_action bootloader; " \
         "test -n ${autoboot}             || setenv autoboot 0; " \
@@ -51,6 +52,7 @@
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
         "test -n ${odin_oc}              || setenv oc 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
+        "test -n ${jc_rail_disable}      || setenv jc_rail_disable 0; " \
         "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
     "address_parse=" \
         "host_mac_addr=0xff; " \
@@ -182,6 +184,12 @@
         "echo -e T210 Super Overclock enabled; " \
 	    "setenv bootargs ${bootargs} androidboot.oc=1; " \
         "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
+    "jc_rail_overlay=" \
+    	"echo -e Joycon Rails disabled; " \
+        "fdt set /serial@70006040 status disabled; " \
+        "fdt set /serial@70006040/joyconr status disabled; " \
+        "fdt set /serial@70006200 status disabled; " \
+        "fdt set /serial@70006200/joyconl status disabled;\0" \
     "vali_vlim_overlay=" \
         "echo VALI: voltage limits [${VLIM}, ${SOCLIM}]; " \
         "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-voltage-limit-millivolt <0x$VLIM>; " \
@@ -210,6 +218,7 @@
 		"setenv bootargs init=/init nvdec_enabled=0 pcie_aspm=off vpr_resize tegra_fbmem=0x800000@0xf5a00000 loglevel=8; " \
 		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
         "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
+        "setenv bootargs ${bootargs} fbcon=map:${fbconsole} consoleblank=0; " \
 		"if test -n $useemmc; then run emmc_target; fi; " \
 		"run get_fdt; " \
 		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
@@ -242,6 +251,7 @@
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
         "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
+        "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
         /* Set default macs, to be overridden by joycons */ \
