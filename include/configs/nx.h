@@ -250,6 +250,7 @@
         /* insert mac address dtb node */ \
         "fdt set /chosen nvidia,wifi-mac ${wifi_mac}; " \
         "fdt set /chosen nvidia,bluetooth-mac ${bt_mac}; " \
+        "if test -n ${device_serial}; then fdt set / serial-number ${device_serial}; fi; " \
 		"setenv bootargs ${bootargs} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
 	"bootcmd_android=" \
 		"part number mmc ${mmcdev} APP app_part_num; " \
