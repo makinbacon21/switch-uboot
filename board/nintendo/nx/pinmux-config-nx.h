@@ -32,6 +32,9 @@ static const struct tegra_gpio_config nx_gpio_inits[] = {
 
 	// UARTC TX
 	GPIO_INIT( D,    1,   SFIO),
+
+    // SD card power
+	GPIO_INIT(E, 4, OUT0),
 };
 
 #define PINCFG(_pingrp, _mux, _pull, _tri, _io, _od, _e_io_hv, _schmt)	\
@@ -67,6 +70,38 @@ static const struct pmux_pingrp_config nx_pingrps[] = {
 	PINCFG(UART3_RX_PD2,         UARTC,      UP,     NORMAL, INPUT,   DISABLE, DEFAULT, NONE),
 	PINCFG(UART3_RTS_PD3,        UARTC,      NORMAL, NORMAL, OUTPUT,  DISABLE, DEFAULT, NONE),
 	PINCFG(UART3_CTS_PD4,        UARTC,      UP,     NORMAL, INPUT,   DISABLE, DEFAULT, NONE),
+};
+
+static const struct pmux_pingrp_config nx_sd_t210_pingrps[] = {
+	/*     pingrp,               mux,        pull,   tri,      e_input, od,      e_io_hv  schmt */
+
+	// SDMMC1
+	PINCFG(SDMMC1_CLK_PM0,       SDMMC1,     DOWN,   NORMAL,   INPUT,   DISABLE, DEFAULT, DISABLE),
+	PINCFG(SDMMC1_CMD_PM1,       SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, DISABLE),
+	PINCFG(SDMMC1_DAT3_PM2,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, DISABLE),
+	PINCFG(SDMMC1_DAT2_PM3,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, DISABLE),
+	PINCFG(SDMMC1_DAT1_PM4,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, DISABLE),
+	PINCFG(SDMMC1_DAT0_PM5,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, DISABLE),
+	// Card detect
+	PINCFG(PZ1,                  RSVD2,      UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, NONE),
+	// Card power
+    PINCFG(DMIC3_CLK_PE4,        RSVD2,      DOWN,   NORMAL,   OUTPUT,  DISABLE, DEFAULT, NONE),
+};
+
+static const struct pmux_pingrp_config nx_sd_t210b01_pingrps[] = {
+	/*     pingrp,               mux,        pull,   tri,      e_input, od,      e_io_hv  schmt */
+
+	// SDMMC1
+	PINCFG(SDMMC1_CLK_PM0,       SDMMC1,     DOWN,   NORMAL,   INPUT,   DISABLE, DEFAULT, ENABLE),
+	PINCFG(SDMMC1_CMD_PM1,       SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, ENABLE),
+	PINCFG(SDMMC1_DAT3_PM2,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, ENABLE),
+	PINCFG(SDMMC1_DAT2_PM3,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, ENABLE),
+	PINCFG(SDMMC1_DAT1_PM4,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, ENABLE),
+	PINCFG(SDMMC1_DAT0_PM5,      SDMMC1,     UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, ENABLE),
+	// Card detect
+	PINCFG(PZ1,                  RSVD2,      UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, NONE),
+	// Card power
+	PINCFG(DMIC3_CLK_PE4,        RSVD2,      DOWN,   NORMAL,   OUTPUT,  DISABLE, DEFAULT, NONE),
 };
 
 #endif /* PINMUX_CONFIG_SWITCH_H */

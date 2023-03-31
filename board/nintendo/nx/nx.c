@@ -259,15 +259,21 @@ void start_cpu_fan(void)
 
 /*
  * Routine: pinmux_init
- * Description: Do individual peripheral pinmux configs for UART A/B/C
+ * Description: Do individual peripheral pinmux configs
  */
 void pinmux_init(void)
 {
-	pinmux_clear_tristate_input_clamping();
-
 	gpio_config_table(nx_gpio_inits,
 			  ARRAY_SIZE(nx_gpio_inits));
 
 	pinmux_config_pingrp_table(nx_pingrps,
 				   ARRAY_SIZE(nx_pingrps));
+
+    if (tegra_get_chip_rev() == MAJORPREV_TEGRA210) {
+		pinmux_config_pingrp_table(nx_sd_t210_pingrps,
+				ARRAY_SIZE(nx_sd_t210_pingrps));
+	} else {
+		pinmux_config_pingrp_table(nx_sd_t210b01_pingrps,
+				ARRAY_SIZE(nx_sd_t210b01_pingrps));
+	}
 }
