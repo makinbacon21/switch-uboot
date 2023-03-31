@@ -70,6 +70,12 @@ static const struct pmux_pingrp_config nx_pingrps[] = {
 	PINCFG(UART3_RX_PD2,         UARTC,      UP,     NORMAL, INPUT,   DISABLE, DEFAULT, NONE),
 	PINCFG(UART3_RTS_PD3,        UARTC,      NORMAL, NORMAL, OUTPUT,  DISABLE, DEFAULT, NONE),
 	PINCFG(UART3_CTS_PD4,        UARTC,      UP,     NORMAL, INPUT,   DISABLE, DEFAULT, NONE),
+
+	// I2C
+	PINCFG(GEN1_I2C_SDA_PJ0,     I2C1,       NORMAL, NORMAL, INPUT,   DISABLE, NORMAL,  NONE),
+	PINCFG(GEN1_I2C_SCL_PJ1,     I2C1,       NORMAL, NORMAL, INPUT,   DISABLE, NORMAL,  NONE),
+	PINCFG(PWR_I2C_SCL_PY3,      I2CPMU,     NORMAL, NORMAL, INPUT,   DISABLE, NORMAL,  NONE),
+	PINCFG(PWR_I2C_SDA_PY4,      I2CPMU,     NORMAL, NORMAL, INPUT,   DISABLE, NORMAL,  NONE),
 };
 
 static const struct pmux_pingrp_config nx_sd_t210_pingrps[] = {
@@ -85,7 +91,7 @@ static const struct pmux_pingrp_config nx_sd_t210_pingrps[] = {
 	// Card detect
 	PINCFG(PZ1,                  RSVD2,      UP,     NORMAL,   INPUT,   DISABLE, DEFAULT, NONE),
 	// Card power
-    PINCFG(DMIC3_CLK_PE4,        RSVD2,      DOWN,   NORMAL,   OUTPUT,  DISABLE, DEFAULT, NONE),
+	PINCFG(DMIC3_CLK_PE4,        RSVD2,      DOWN,   NORMAL,   OUTPUT,  DISABLE, DEFAULT, NONE),
 };
 
 static const struct pmux_pingrp_config nx_sd_t210b01_pingrps[] = {
