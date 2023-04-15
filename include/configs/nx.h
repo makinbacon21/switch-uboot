@@ -133,9 +133,7 @@
 			"setenv variant frig; " \
 		"fi; " \
         "echo SKU: ${variant} REV: ${dtrev}; " \
-        "echo Serial: ${device_serial}; " \
-        "echo BT MAC: ${device_bt_mac}; " \
-        "echo WF MAC: ${device_wifi_mac};\0" \
+        "echo Serial: ${device_serial};\0" \
 	"default_target=" \
 		"setenv mmcdev 1; " \
 		"setenv bootpart 0; " \
@@ -255,8 +253,11 @@
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
         /* Set default macs, to be overridden by joycons */ \
-        "if test -n ${device_bt_mac}; then bt_mac=${device_bt_mac}; else run address_parse; fi; " \
-        "if test -n ${device_wifi_mac}; then wifi_mac=${device_wifi_mac}; else run address_parse; fi; " \
+        "setenv wifi_mac=${device_wifi_mac}; " \
+        "setenv bt_mac=${device_bt_mac}; " \
+        "run address_parse; " \
+        "echo BT MAC: ${bt_mac}; " \
+        "echo WF MAC: ${wifi_mac}; " \
         /* insert mac address dtb node */ \
         "fdt set /chosen nvidia,wifi-mac ${wifi_mac}; " \
         "fdt set /chosen nvidia,bluetooth-mac ${bt_mac}; " \
