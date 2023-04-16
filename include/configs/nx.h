@@ -217,9 +217,9 @@
 		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
         "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
         "setenv bootargs ${bootargs} fbcon=map:${fbconsole} consoleblank=0; " \
-		"if test -n $useemmc; then run emmc_target; fi; " \
+		"if test -n $emmc; then run emmc_target; fi; " \
 		"run get_fdt; " \
-		"if test -n $useemmc; then run emmc_overlay; else run sd_overlay; fi; " \
+		"if test -n $emmc; then run emmc_overlay; else run sd_overlay; fi; " \
         "echo uart port (debug): ${uart_port}; " \
         /* UART-A (Onboard UART Port) */ \
         "if test ${uart_port} = 1; then " \
