@@ -103,62 +103,62 @@
                 "fi; " \
             "fi; " \
         "fi;\0" \
-	"preboot=" \
+    "preboot=" \
         "if itest.l *0xA9FBFFFC == 0x33334C42; then " \
             "env import -t 0xA9FC0000 0x20000; " \
         "fi;" \
         "run defines; " \
         "run setup_env;\0" \
-	"set_variant=" \
+    "set_variant=" \
         "if test ${t210b01} = 1; then setenv plat_info T210B01; else setenv plat_info T210; fi; " \
         /* V1 SWITCH */ \
-		"if   test ${sku} = 0; then " \
-			"setenv dtid ${odin_id}; " \
-			"setenv dtrev 0x0; " \
-			"setenv variant odin; " \
+        "if   test ${sku} = 0; then " \
+            "setenv dtid ${odin_id}; " \
+            "setenv dtrev 0x0; " \
+            "setenv variant odin; " \
         /* V2 SWITCH */ \
-		"elif test ${sku} = 1; then " \
-			"setenv dtid ${modin_id}; " \
-			"setenv dtrev 0xb01; " \
-			"setenv variant modin;" \
+        "elif test ${sku} = 1; then " \
+            "setenv dtid ${modin_id}; " \
+            "setenv dtrev 0xb01; " \
+            "setenv variant modin; " \
         /* SWITCH LITE */ \
-		"elif test ${sku} = 2; then " \
-			"setenv dtid ${vali_id}; " \
-			"setenv dtrev 0x0; " \
-			"setenv variant vali; " \
+        "elif test ${sku} = 2; then " \
+            "setenv dtid ${vali_id}; " \
+            "setenv dtrev 0x0; " \
+            "setenv variant vali; " \
         /* SWITCH OLED */ \
-		"elif test ${sku} = 3; then " \
-			"setenv dtid ${frig_id}; " \
-			"setenv dtrev 0x0; " \
-			"setenv variant frig; " \
-		"fi; " \
+        "elif test ${sku} = 3; then " \
+            "setenv dtid ${frig_id}; " \
+            "setenv dtrev 0x0; " \
+            "setenv variant frig; " \
+        "fi; " \
         "echo SKU: ${variant} REV: ${dtrev}; " \
         "echo Serial: ${device_serial};\0" \
-	"default_target=" \
-		"setenv mmcdev 1; " \
-		"setenv bootpart 0; " \
-		"mmc dev ${mmcdev};\0" \
-	"emmc_target=" \
-		"setenv mmcdev 0; " \
-		"mmc dev ${mmcdev};\0" \
-	"emmc_overlay=" \
-		"fdt set /sdhci@700b0600 status okay; " \
-		"fdt set /firmware/android boot_devices sdhci-tegra.3; " \
+    "default_target=" \
+        "setenv mmcdev 1; " \
+        "setenv bootpart 0; " \
+        "mmc dev ${mmcdev};\0" \
+    "emmc_target=" \
+        "setenv mmcdev 0; " \
+        "mmc dev ${mmcdev};\0" \
+    "emmc_overlay=" \
+        "fdt set /sdhci@700b0600 status okay; " \
+        "fdt set /firmware/android boot_devices sdhci-tegra.3; " \
         "echo -e using eMMC;\0" \
-	"sd_overlay=" \
-		"fdt set /firmware/android boot_devices sdhci-tegra.0;\0" \
+    "sd_overlay=" \
+        "fdt set /firmware/android boot_devices sdhci-tegra.0;\0" \
     "touch_overlay=" \
         "setenv bootargs ${bootargs} \"ftm4.skip_tuning=1\";\0" \
     "usb3_overlay=" \
-    	"echo -e USB3 disabled; " \
-	    "fdt get value DHANDLE_USB2 /xusb_padctl@7009f000/pads/usb2/lanes/usb2-0 phandle; " \
-	    "fdt set /xusb@70090000 phys <$DHANDLE_USB2>; " \
-	    "fdt set /xusb@70090000 phy-names usb2-0; " \
-	    "fdt set /xudc@700d0000 phys <$DHANDLE_USB2>; " \
-	    "fdt set /xudc@700d0000 phy-names usb2; " \
-	    "fdt set /xusb_padctl@7009f000 usb3-no-mapping-war <0x1>; " \
-	    "fdt set /xusb_padctl@7009f000/ports/usb2-0 nvidia,usb3-port-fake <0xffffffff>; " \
-	    "fdt set /xusb_padctl@7009f000/ports/usb3-0 status disabled;\0" \
+        "echo -e USB3 disabled; " \
+        "fdt get value DHANDLE_USB2 /xusb_padctl@7009f000/pads/usb2/lanes/usb2-0 phandle; " \
+        "fdt set /xusb@70090000 phys <$DHANDLE_USB2>; " \
+        "fdt set /xusb@70090000 phy-names usb2-0; " \
+        "fdt set /xudc@700d0000 phys <$DHANDLE_USB2>; " \
+        "fdt set /xudc@700d0000 phy-names usb2; " \
+        "fdt set /xusb_padctl@7009f000 usb3-no-mapping-war <0x1>; " \
+        "fdt set /xusb_padctl@7009f000/ports/usb2-0 nvidia,usb3-port-fake <0xffffffff>; " \
+        "fdt set /xusb_padctl@7009f000/ports/usb3-0 status disabled;\0" \
     "4k60_overlay=" \
         "fdt set /i2c@7000c000/bm92t@18 rohm,dp-lanes <2>; " \
         "echo -e 4K60 disabled;\0" \
@@ -168,7 +168,7 @@
         "fdt set /sdhci@700b0000 uhs-mask <0x7F>;\0" \
     "dvfs_enable=" \
         "echo -e DVFS B-Side enabled; " \
-	    "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2 androidboot.dvfsb=1; " \
+        "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2 androidboot.dvfsb=1; " \
         "if test ${sku} != 2; then; " \
             /* 2397 MHz CPU and 1075 MHz GPU hard limit */ \
             "fdt set /cpufreq/cpu-scaling-data max-frequency <0x249348>; " \
@@ -180,10 +180,10 @@
         "fi;\0" \
     "oc_enable=" \
         "echo -e T210 Super Overclock enabled; " \
-	    "setenv bootargs ${bootargs} androidboot.oc=1; " \
+        "setenv bootargs ${bootargs} androidboot.oc=1; " \
         "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
     "jc_rail_overlay=" \
-    	"echo -e Joycon Rails disabled; " \
+        "echo -e Joycon Rails disabled; " \
         "fdt set /serial@70006040 status disabled; " \
         "fdt set /serial@70006040/joyconr status disabled; " \
         "fdt set /serial@70006200 status disabled; " \
@@ -193,33 +193,33 @@
         "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-voltage-limit-millivolt <0x$VLIM>; " \
         "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-thermal-voltage-limit <0x$VLIM 0x$VLIM 0x$VLIM 0xFF0>; " \
         "fdt set /i2c@7000c000/battery-gauge@36 maxim,kernel-maximum-soc <0x$SOCLIM>;\0" \
-	"display_overlay=" \
-		"if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
-		"elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
-		"elif test ${display_id} = 10;   then echo Display is JDI 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-j-720p-6-2 phandle; " \
-		"elif test ${display_id} = 1020; then echo Display is INN 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-5-5 phandle; " \
-		"elif test ${display_id} = 1030; then echo Display is AUO 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-5-5 phandle; " \
-		"elif test ${display_id} = 1040; then echo Display is SHP 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-s-720p-5-5 phandle; " \
-		"else echo -e Unknown Display ID: ${display_id}!; fi; " \
-		"if test -n ${DHANDLE}; then echo Setting Display panel; fdt set /host1x/dsi nvidia,active-panel <$DHANDLE>; fi\0" \
-	"get_fdt=" \
-		"part start mmc ${mmcdev} DTB dtb_start; " \
-		"part size mmc ${mmcdev} DTB dtb_size; " \
-		"mmc read ${fdt_staging_addr} ${dtb_start} ${dtb_size}; " \
-		"adtimg addr ${fdt_staging_addr}; " \
-		"adtimg get dt --id=${dtid} dtaddr dtsize dtidx; " \
-		"cp.b ${dtaddr} ${fdt_addr_r} ${dtsize};" \
-		"fdt addr ${fdt_addr_r} ${dtsize};" \
+    "display_overlay=" \
+        "if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
+        "elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
+        "elif test ${display_id} = 10;   then echo Display is JDI 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-j-720p-6-2 phandle; " \
+        "elif test ${display_id} = 1020; then echo Display is INN 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-5-5 phandle; " \
+        "elif test ${display_id} = 1030; then echo Display is AUO 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-5-5 phandle; " \
+        "elif test ${display_id} = 1040; then echo Display is SHP 5.5; fdt get value DHANDLE /host1x@50000000/dsi/panel-s-720p-5-5 phandle; " \
+        "else echo -e Unknown Display ID: ${display_id}!; fi; " \
+        "if test -n ${DHANDLE}; then echo Setting Display panel; fdt set /host1x/dsi nvidia,active-panel <$DHANDLE>; fi\0" \
+    "get_fdt=" \
+        "part start mmc ${mmcdev} DTB dtb_start; " \
+        "part size mmc ${mmcdev} DTB dtb_size; " \
+        "mmc read ${fdt_staging_addr} ${dtb_start} ${dtb_size}; " \
+        "adtimg addr ${fdt_staging_addr}; " \
+        "adtimg get dt --id=${dtid} dtaddr dtsize dtidx; " \
+        "cp.b ${dtaddr} ${fdt_addr_r} ${dtsize};" \
+        "fdt addr ${fdt_addr_r} ${dtsize};" \
         "fdt resize 16384\0" \
-	"bootcmd_common=" \
-		"run set_variant; " \
-		"setenv bootargs init=/init nvdec_enabled=0 pcie_aspm=off vpr_resize tegra_fbmem=0x800000@0xf5a00000 loglevel=8; " \
-		"setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
+    "bootcmd_common=" \
+        "run set_variant; " \
+        "setenv bootargs init=/init nvdec_enabled=0 pcie_aspm=off vpr_resize tegra_fbmem=0x800000@0xf5a00000 loglevel=8; " \
+        "setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
         "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
         "setenv bootargs ${bootargs} fbcon=map:${fbconsole} consoleblank=0; " \
-		"if test -n $emmc; then run emmc_target; fi; " \
-		"run get_fdt; " \
-		"if test -n $emmc; then run emmc_overlay; else run sd_overlay; fi; " \
+        "if test -n $emmc; then run emmc_target; fi; " \
+        "run get_fdt; " \
+        "if test -n $emmc; then run emmc_overlay; else run sd_overlay; fi; " \
         "echo uart port (debug): ${uart_port}; " \
         /* UART-A (Onboard UART Port) */ \
         "if test ${uart_port} = 1; then " \
@@ -245,7 +245,7 @@
         "fi; " \
         "if test ${4k60_disable} = 1; then run 4k60_overlay; fi; " \
         "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
-		"if test ${sku} != 3; then run display_overlay; fi; " \
+        "if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
         "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
@@ -262,33 +262,33 @@
         "fdt set /chosen nvidia,wifi-mac ${wifi_mac}; " \
         "fdt set /chosen nvidia,bluetooth-mac ${bt_mac}; " \
         "if test -n ${device_serial}; then fdt set / serial-number ${device_serial}; fi; " \
-		"setenv bootargs ${bootargs} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
-	"bootcmd_android=" \
-		"part number mmc ${mmcdev} APP app_part_num; " \
-		"part uuid mmc ${mmcdev}:${app_part_num} app_part_uuid; " \
-		"part start mmc ${mmcdev} LNX lnx_start; " \
-		"part size mmc ${mmcdev} LNX lnx_size; " \
-		"mmc read ${boot_staging_addr} ${lnx_start} ${lnx_size}; " \
-		"setenv bootargs skip_initramfs ro rootwait root=PARTUUID=${app_part_uuid} ${bootargs} bluetooth.disable_ertm=1; " \
-		"bootm ${boot_staging_addr} ${boot_staging_addr} ${fdt_addr_r};\0" \
-	"bootcmd_recovery=" \
-		"part start mmc ${mmcdev} SOS recovery_start; " \
-		"part size mmc ${mmcdev} SOS recovery_size; " \
-		"mmc read ${recovery_staging_addr} ${recovery_start} ${recovery_size}; " \
-		"bootm ${recovery_staging_addr} ${recovery_staging_addr} ${fdt_addr_r};\0" \
-	"bootcmd=" \
-		"run default_target; " \
-		"if test -n ${uenvcmd}; then " \
-			"echo Running uenvcmd ...; " \
-			"run uenvcmd; " \
-		"else " \
-			"run bootcmd_common; " \
-			"if gpio input 190 || test ${recovery} = \"1\"; then " \
-				"run bootcmd_recovery; " \
-			"else " \
-				"run bootcmd_android; " \
-			"fi; " \
-		"fi;\0"
+        "setenv bootargs ${bootargs} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
+    "bootcmd_android=" \
+        "part number mmc ${mmcdev} APP app_part_num; " \
+        "part uuid mmc ${mmcdev}:${app_part_num} app_part_uuid; " \
+        "part start mmc ${mmcdev} LNX lnx_start; " \
+        "part size mmc ${mmcdev} LNX lnx_size; " \
+        "mmc read ${boot_staging_addr} ${lnx_start} ${lnx_size}; " \
+        "setenv bootargs skip_initramfs ro rootwait root=PARTUUID=${app_part_uuid} ${bootargs} bluetooth.disable_ertm=1; " \
+        "bootm ${boot_staging_addr} ${boot_staging_addr} ${fdt_addr_r};\0" \
+    "bootcmd_recovery=" \
+        "part start mmc ${mmcdev} SOS recovery_start; " \
+        "part size mmc ${mmcdev} SOS recovery_size; " \
+        "mmc read ${recovery_staging_addr} ${recovery_start} ${recovery_size}; " \
+        "bootm ${recovery_staging_addr} ${recovery_staging_addr} ${fdt_addr_r};\0" \
+    "bootcmd=" \
+        "run default_target; " \
+        "if test -n ${uenvcmd}; then " \
+            "echo Running uenvcmd ...; " \
+            "run uenvcmd; " \
+        "else " \
+            "run bootcmd_common; " \
+            "if gpio input 190 || test ${recovery} = \"1\"; then " \
+                "run bootcmd_recovery; " \
+            "else " \
+                "run bootcmd_android; " \
+            "fi; " \
+        "fi;\0"
 
 #include "tegra-common-post.h"
 
