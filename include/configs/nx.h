@@ -217,9 +217,9 @@
         "setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
         "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
         "setenv bootargs ${bootargs} fbcon=map:${fbconsole} consoleblank=0; " \
-        "if test -n $emmc; then run emmc_target; fi; " \
+        "if test $emmc = 1; then run emmc_target; fi; " \
         "run get_fdt; " \
-        "if test -n $emmc; then run emmc_overlay; else run sd_overlay; fi; " \
+        "if test $emmc = 1; then run emmc_overlay; else run sd_overlay; fi; " \
         "echo uart port (debug): ${uart_port}; " \
         /* UART-A (Onboard UART Port) */ \
         "if test ${uart_port} = 1; then " \
@@ -261,7 +261,7 @@
         /* insert mac address dtb node */ \
         "fdt set /chosen nvidia,wifi-mac ${wifi_mac}; " \
         "fdt set /chosen nvidia,bluetooth-mac ${bt_mac}; " \
-        "if test -n ${device_serial}; then fdt set / serial-number ${device_serial}; fi; " \
+        "fdt set / serial-number ${device_serial}; " \
         "setenv bootargs ${bootargs} androidboot.bootloader=${blver} androidboot.hardware=nx androidboot.hardware.sku=${variant} androidboot.serialno=${device_serial} androidboot.modem=none androidboot.dtb_idx=${dtidx};\0" \
     "bootcmd_android=" \
         "part number mmc ${mmcdev} APP app_part_num; " \
