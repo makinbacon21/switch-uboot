@@ -75,31 +75,31 @@
             "echo -e No JoyCons available; " \
         "else " \
             "echo Generating MAC addresses with JoyCon pairing info; " \
-            "bt_mac=\"\"; " \
+            "bt_mac_gen=\"\"; " \
             "sep=\"\"; " \
             "for i in 0 1 2 3 4 5 ; do " \
                 "setexpr x $host_mac_addr + $i; " \
                 "setexpr.b b *$x; " \
                 "if itest $b <= f; then " \
                     /* There is no way to have leading zeros, so do this hack */ \
-                    "bt_mac=\"${bt_mac}${sep}0${b}\"; " \
-                    "echo bt_mac (a): ${bt_mac}; " \
+                    "bt_mac_gen=\"${bt_mac_gen}${sep}0${b}\"; " \
+                    "echo bt_mac_gen (a): ${bt_mac_gen}; " \
                 "else " \
-                    "bt_mac=\"${bt_mac}${sep}${b}\"; " \
-                    "echo bt_mac (b): ${bt_mac}; " \
+                    "bt_mac_gen=\"${bt_mac_gen}${sep}${b}\"; " \
+                    "echo bt_mac_gen (b): ${bt_mac_gen}; " \
                 "fi; " \
                 "sep=\":\"; " \
             "done; " \
             "setexpr.b last_byte *0x90000005; " \
             "if itest $last_byte == 0xFF; then " \
                 /* wrap around case */ \
-                "setexpr wifi_mac gsub \"(.*:.*:.*:.*:.*:).*\" \"\\100\" $bt_mac; " \
+                "setexpr wifi_mac_gen gsub \"(.*:.*:.*:.*:.*:).*\" \"\\100\" $bt_mac_gen; " \
             "else " \
                 "setexpr.b wb $last_byte + 1; " \
                 "if itest $wb <= f; then " \
-                    "setexpr wifi_mac gsub \"(.*:.*:.*:.*:.*:).*\" \"\\10$wb\" $bt_mac; " \
+                    "setexpr wifi_mac_gen gsub \"(.*:.*:.*:.*:.*:).*\" \"\\10$wb\" $bt_mac_gen; " \
                 "else " \
-                    "setexpr wifi_mac gsub \"(.*:.*:.*:.*:.*:).*\" \"\\1$wb\" $bt_mac; " \
+                    "setexpr wifi_mac_gen gsub \"(.*:.*:.*:.*:.*:).*\" \"\\1$wb\" $bt_mac_gen; " \
                 "fi; " \
             "fi; " \
         "fi;\0" \
@@ -252,10 +252,14 @@
         "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
-        /* Set default macs, to be overridden by joycons */ \
-        "setenv wifi_mac=${device_wifi_mac}; " \
-        "setenv bt_mac=${device_bt_mac}; " \
+        /* Try to grab address from joycons, otherwise use defaults */ \
         "run address_parse; " \
+        "if test -z ${wifi_mac}; then " \
+            "if test -z ${wifi_mac_gen}; then setenv wifi_mac ${device_wifi_mac}; else setenv wifi_mac ${wifi_mac_gen}; fi;" \
+        "fi; " \
+        "if test -z ${bt_mac}; then " \
+            "if test -z ${bt_mac_gen}; then setenv bt_mac ${device_bt_mac}; else setenv bt_mac ${bt_mac_gen}; fi;" \
+        "fi; " \
         "echo BT MAC: ${bt_mac}; " \
         "echo WF MAC: ${wifi_mac}; " \
         /* insert mac address dtb node */ \
