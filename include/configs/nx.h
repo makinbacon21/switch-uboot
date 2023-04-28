@@ -50,7 +50,7 @@
         "test -n ${usb3_enable}          || setenv usb3_enable 0; " \
         "test -n ${4k60_disable}         || setenv 4k60_disable 0; " \
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
-        "test -n ${odin_oc}              || setenv oc 0; " \
+        "test -n ${odin_oc}              || setenv odin_oc 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${jc_rail_disable}      || setenv jc_rail_disable 0; " \
         "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
@@ -247,7 +247,7 @@
         "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
         "if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
-        "if test ${t210b01} = 0 -a ${oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
+        "if test ${t210b01} = 0 -a ${odin_oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
         "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
