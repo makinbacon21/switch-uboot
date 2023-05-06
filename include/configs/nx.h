@@ -54,6 +54,7 @@
         "test -n ${usb3_enable}          || setenv usb3_enable 0; " \
         "test -n ${4k60_disable}         || setenv 4k60_disable 0; " \
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
+        "test -n ${gpu_dvfsc}            || setenv gpu_dvfsc 0; " /* NOTE: Blocked by nvcpl for now */ \
         "test -n ${odin_oc}              || setenv odin_oc 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${jc_rail_disable}      || setenv jc_rail_disable 0; " \
@@ -173,6 +174,9 @@
     "dvfs_enable=" \
         "echo -e DVFS B-Side enabled; " \
         "setenv bootargs ${bootargs} speedo_tegra210.cspd_id=2 speedo_tegra210.cspd_id=2 speedo_tegra210.gspd_id=2 androidboot.dvfsb=1; " \
+        "if test ${gpu_dvfsc} != 1; then " \
+		    "setenv bootargs ${bootargs} \"speedo_tegra210.gspd_id=2\"; " \
+	    "fi; " \
         "if test ${sku} != 2; then; " \
             /* 2397 MHz CPU and 1075 MHz GPU hard limit */ \
             "fdt set /cpufreq/cpu-scaling-data max-frequency <0x249348>; " \
@@ -181,6 +185,14 @@
             /* 2091 MHz CPU and 844 MHz GPU hard limit. Vali */ \
             "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>; " \
             "fdt set /dvfs nvidia,gpu-max-freq-khz <0xCE400>; " \
+        "fi;\0" \
+    "dvfsc_enable=" \
+        "echo -e DVFS C-Side GPU enabled; " \
+        "setenv bootargs ${bootargs} \"androidboot.dvfsc=1\"; " \
+        "if test ${dvfsb} != 1; then " \
+            "setenv bootargs ${bootargs} \"speedo_tegra210.sku_id=0x83 speedo_tegra210.gspd_id=3\"; " \
+        "else; " \
+            "setenv bootargs ${bootargs} \"speedo_tegra210.gspd_id=3\"; " \
         "fi;\0" \
     "oc_enable=" \
         "echo -e T210 Super Overclock enabled; " \
@@ -275,6 +287,7 @@
         "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
         "if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
+        "if test ${t210b01} = 1 -a ${gpu_dvfsc} = 1; then run dvfsc_enable; else setenv bootargs ${bootargs} androidboot.dvfsc=0; fi; " \
         "if test ${t210b01} = 0 -a ${odin_oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
         "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
