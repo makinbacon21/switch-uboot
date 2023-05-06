@@ -55,6 +55,7 @@
         "test -n ${4k60_disable}         || setenv 4k60_disable 0; " \
         "test -n ${dvfsb}                || setenv dvfsb 0; " \
         "test -n ${gpu_dvfsc}            || setenv gpu_dvfsc 0; " /* NOTE: Blocked by nvcpl for now */ \
+        "test -n ${limit_gpu_clk}        || setenv limit_gpu_clk 0; " /* NOTE: Needs testing but nvcpl shouldn't need updating */ \
         "test -n ${odin_oc}              || setenv odin_oc 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${jc_rail_disable}      || setenv jc_rail_disable 0; " \
@@ -198,6 +199,12 @@
         "echo -e T210 Super Overclock enabled; " \
         "setenv bootargs ${bootargs} androidboot.oc=1; " \
         "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
+    "gpu_limit_overlay=" \
+        "if test ${sku} != 2; then " \
+            /* If not Vali set GPU hard limit to 1075 MHz. */ \
+            "echo -e GPU clock limit enabled; " \
+            "fdt set /dvfs nvidia,gpu-max-freq-khz <0x106800>; " \
+	    "fi;\0" \
     "jc_rail_overlay=" \
         "echo -e Joycon Rails disabled; " \
         "fdt set /serial@70006040 status disabled; " \
@@ -289,6 +296,7 @@
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
         "if test ${t210b01} = 1 -a ${gpu_dvfsc} = 1; then run dvfsc_enable; else setenv bootargs ${bootargs} androidboot.dvfsc=0; fi; " \
         "if test ${t210b01} = 0 -a ${odin_oc} = 1; then run oc_enable; else setenv bootargs ${bootargs} androidboot.oc=0; fi; " \
+        "if test ${t210b01} = 1 -a ${limit_gpu_clk} = 1; then run gpu_limit_overlay; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
         "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
