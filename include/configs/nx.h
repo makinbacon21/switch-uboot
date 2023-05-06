@@ -36,6 +36,9 @@
         "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 androidboot.console=ttyS1\"; " \
         "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 androidboot.console=ttyS2\"; " \
         "setenv usblg_args            \"console=ttyGS0,115200,8n1 androidboot.console=ttyGS0\"; " \
+        "setenv uarta_early           \"earlycon=uart,mmio32,0x70006000\"; " \
+        "setenv uartb_early           \"earlycon=uart,mmio32,0x70006040\"; " \
+        "setenv uartc_early           \"earlycon=uart,mmio32,0x70006200\"; " \
         "setenv no_args               \"console=null\";\0" \
     "setup_env=" \
         "setenv boot_dir ${prefix}; " \
@@ -44,6 +47,7 @@
         "test -n ${device_serial}        || mmc info device_serial; " \
         "test -n ${fbconsole}            || setenv fbconsole 9; " \
         "test -n ${uart_port}            || setenv uart_port 0; " \
+        "test -n ${earlycon}             || setenv earlycon 0; " \
         "test -n ${r2p_action}           || setenv r2p_action bootloader; " \
         "test -n ${autoboot}             || setenv autoboot 0; " \
         "test -n ${autoboot_list}        || setenv autoboot_list 0; " \
@@ -226,16 +230,31 @@
             "setenv bootargs \"${uarta_args} ${bootargs}\"; echo -e Enabled UART-A logging; " \
             "fdt set /serial@70006000 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006000 status okay; " \
+            "if test ${earlycon} = 1; then; " \
+                "echo -e Early logging enabled; " \
+                "setenv bootargs ${bootargs} ${uarta_early}; " \
+                "fdt set /serial@70006000 reset-names noreset; " \
+            "fi; " \
         /* UART-B (Right JoyCon Rail) */ \
         "elif test ${uart_port} = 2; then " \
             "setenv bootargs \"${uartb_args} ${bootargs}\"; echo -e Enabled UART-B logging; " \
             "fdt set /serial@70006040 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006040/joyconr status disabled; " \
+            "if test ${earlycon} = 1; then; " \
+                "echo -e Early logging enabled; " \
+                "setenv bootargs ${bootargs} ${uartb_early}; " \
+                "fdt set /serial@70006040 reset-names noreset; " \
+            "fi; " \
         /* UART-C (Left JoyCon Rail) */ \
         "elif test ${uart_port} = 3; then " \
             "setenv bootargs \"${uartc_args} ${bootargs}\"; echo -e Enabled UART-C logging; " \
             "fdt set /serial@70006200 compatible nvidia,tegra20-uart; " \
             "fdt set /serial@70006200/joyconl status disabled; " \
+            "if test ${earlycon} = 1; then; " \
+                "echo -e Early logging enabled; " \
+                "setenv bootargs ${bootargs} ${uartc_early}; " \
+                "fdt set /serial@70006200 reset-names noreset; " \
+            "fi; " \
         /* USB Serial */ \
         "elif test ${uart_port} = 4; then " \
             "setenv bootargs \"${usblg_args} ${bootargs}\"; echo -e Enabled USB Serial logging; " \
@@ -254,11 +273,11 @@
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
         /* Try to grab address from joycons, otherwise use defaults */ \
         "run address_parse; " \
-        "if test -z ${wifi_mac}; then " \
-            "if test -z ${wifi_mac_gen}; then setenv wifi_mac ${device_wifi_mac}; else setenv wifi_mac ${wifi_mac_gen}; fi;" \
+        "if test ! -n ${wifi_mac}; then " \
+            "if test -n ${wifi_mac_gen}; then setenv wifi_mac ${wifi_mac_gen}; else setenv wifi_mac ${device_wifi_mac}; fi;" \
         "fi; " \
-        "if test -z ${bt_mac}; then " \
-            "if test -z ${bt_mac_gen}; then setenv bt_mac ${device_bt_mac}; else setenv bt_mac ${bt_mac_gen}; fi;" \
+        "if test ! -n ${bt_mac}; then " \
+            "if test -n ${bt_mac_gen}; then setenv bt_mac ${bt_mac_gen}; else setenv bt_mac ${device_bt_mac}; fi;" \
         "fi; " \
         "echo BT MAC: ${bt_mac}; " \
         "echo WF MAC: ${wifi_mac}; " \
