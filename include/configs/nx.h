@@ -194,9 +194,18 @@
         "fdt set /serial@70006200/joyconl status disabled;\0" \
     "vali_vlim_overlay=" \
         "echo VALI: voltage limits [${VLIM}, ${SOCLIM}]; " \
-        "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-voltage-limit-millivolt <0x$VLIM>; " \
-        "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-thermal-voltage-limit <0x$VLIM 0x$VLIM 0x$VLIM 0xFF0>; " \
-        "fdt set /i2c@7000c000/battery-gauge@36 maxim,kernel-maximum-soc <0x$SOCLIM>;\0" \
+        "if test \"${VLIM}\" != 1070; then " \
+            /* Newer Lite. 4320 mV / 1664 mA. */ \
+            "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-voltage-limit-millivolt <0x$VLIM>; " \
+            "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-thermal-voltage-limit <0x$VLIM 0x$VLIM 0x$VLIM 0xFF0>; " \
+            "fdt set /i2c@7000c000/battery-gauge@36 maxim,kernel-maximum-soc <0x$SOCLIM>; " \
+        "else; " \
+            /* Old Lite. 4208 mV / 1536 mA. (Unreleased?) */ \
+            "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-voltage-limit-millivolt <0x1070>; " \
+            "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-thermal-voltage-limit <0x1070 0x1070 0x1070 0xF70>; " \
+            "fdt set /i2c@7000c000/battery-charger@6b/charger ti,fast-charge-current-limit-milliamp <0x600>; " \
+            "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-current-limit <0x200 0x240 0x600 0x600>; " \
+        "fi;\0" \
     "display_overlay=" \
         "if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
         "elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
