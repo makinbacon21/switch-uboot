@@ -31,18 +31,20 @@
         "setenv fdt_staging_addr      0x94000000; " \
         "setenv boot_staging_addr     0x98000000; " \
         "setenv recovery_staging_addr 0x98000000; " \
+        "setenv env_staging_addr      0x90000000; " \
         /* BOOTARGS FOR UART TYPES */ \
         "setenv uarta_args            \"no_console_suspend console=ttyS0,115200,8n1 androidboot.console=ttyS0\"; " \
         "setenv uartb_args            \"no_console_suspend console=ttyS1,115200,8n1 androidboot.console=ttyS1\"; " \
         "setenv uartc_args            \"no_console_suspend console=ttyS2,115200,8n1 androidboot.console=ttyS2\"; " \
-        "setenv usblg_args            \"console=ttyGS0,115200,8n1 androidboot.console=ttyGS0\"; " \
+        "setenv usblg_args            \"usb_logging androidboot.console=ttyGS0\"; " \
         "setenv uarta_early           \"earlycon=uart,mmio32,0x70006000\"; " \
         "setenv uartb_early           \"earlycon=uart,mmio32,0x70006040\"; " \
         "setenv uartc_early           \"earlycon=uart,mmio32,0x70006200\"; " \
         "setenv no_args               \"console=null\";\0" \
     "setup_env=" \
         "setenv boot_dir ${prefix}; " \
-        "test -n ${id}                   || setenv id SWR-AND; " \
+        "test -n ${loader_rev}           || setenv loader_rev 0; " \
+        "test -n ${id}                   || setenv id SWANDR; " \
         "test -n ${emmc}                 || setenv emmc 0; " \
         "test -n ${device_serial}        || mmc info device_serial; " \
         "test -n ${fbconsole}            || setenv fbconsole 9; " \
@@ -59,7 +61,36 @@
         "test -n ${oc}                   || setenv oc 0; " \
         "test -n ${touch_skip_tuning}    || setenv touch_skip_tuning 0; " \
         "test -n ${jc_rail_disable}      || setenv jc_rail_disable 0; " \
-        "test -n ${sd_1bit}              || setenv sd_1bit 0;\0" \
+        "test -n ${wifi_disable_vht80}   || setenv wifi_disable_vht80 0; " \
+        "test -n ${alarms_enable}        || setenv alarms_enable 0; " \
+        "test -n ${ddr200_enable}        || setenv ddr200_enable 0;\0" \
+    "setup_calib=" \
+        /* IMU */ \
+        "test -n ${acc_cal_off_x}        || setenv acc_cal_off_x 0x0; " \
+        "test -n ${acc_cal_off_y}        || setenv acc_cal_off_y 0x0; " \
+        "test -n ${acc_cal_off_z}        || setenv acc_cal_off_z 0x0; " \
+        "test -n ${acc_cal_scl_x}        || setenv acc_cal_scl_x 0x0; " \
+        "test -n ${acc_cal_scl_y}        || setenv acc_cal_scl_y 0x0; " \
+        "test -n ${acc_cal_scl_z}        || setenv acc_cal_scl_z 0x0; " \
+        "test -n ${gyr_cal_off_x}        || setenv gyr_cal_off_x 0x0; " \
+        "test -n ${gyr_cal_off_y}        || setenv gyr_cal_off_y 0x0; " \
+        "test -n ${gyr_cal_off_z}        || setenv gyr_cal_off_z 0x0; " \
+        "test -n ${gyr_cal_scl_x}        || setenv gyr_cal_scl_x 0x0; " \
+        "test -n ${gyr_cal_scl_y}        || setenv gyr_cal_scl_y 0x0; " \
+        "test -n ${gyr_cal_scl_z}        || setenv gyr_cal_scl_z 0x0; " \
+        /* Sio Sticks */ \
+        "test -n ${lite_cal_lx_lof}      || setenv lite_cal_lx_lof 0x0; " \
+        "test -n ${lite_cal_lx_cnt}      || setenv lite_cal_lx_cnt 0x0; " \
+        "test -n ${lite_cal_lx_rof}      || setenv lite_cal_lx_rof 0x0; " \
+        "test -n ${lite_cal_ly_dof}      || setenv lite_cal_ly_dof 0x0; " \
+        "test -n ${lite_cal_ly_cnt}      || setenv lite_cal_ly_cnt 0x0; " \
+        "test -n ${lite_cal_ly_uof}      || setenv lite_cal_ly_uof 0x0; " \
+        "test -n ${lite_cal_rx_lof}      || setenv lite_cal_rx_lof 0x0; " \
+        "test -n ${lite_cal_rx_cnt}      || setenv lite_cal_rx_cnt 0x0; " \
+        "test -n ${lite_cal_rx_rof}      || setenv lite_cal_rx_rof 0x0; " \
+        "test -n ${lite_cal_ry_dof}      || setenv lite_cal_ry_dof 0x0; " \
+        "test -n ${lite_cal_ry_cnt}      || setenv lite_cal_ry_cnt 0x0; " \
+        "test -n ${lite_cal_ry_uof}      || setenv lite_cal_ry_uof 0x0;\0" \
     "address_parse=" \
         "host_mac_addr=0xff; " \
         /* load mac address info file from sd */ \
@@ -114,7 +145,8 @@
             "env import -t 0xA9FC0000 0x20000; " \
         "fi;" \
         "run defines; " \
-        "run setup_env;\0" \
+        "run setup_env; " \
+        "run setup_calib;\0" \
     "set_variant=" \
         "if test ${t210b01} = 1; then setenv plat_info T210B01; else setenv plat_info T210; fi; " \
         /* V1 SWITCH */ \
@@ -150,13 +182,23 @@
     "emmc_overlay=" \
         "fdt set /sdhci@700b0600 status okay; " \
         "fdt set /firmware/android boot_devices sdhci-tegra.3; " \
+        "if test \"${mmc_1bit}\" = 1; then " \
+            "echo -e eMMC is initialized in 1-bit mode!; " \
+            "fdt set /sdhci@700b0600 bus-width <0x1>; " \
+            "fdt set /sdhci@700b0600 uhs-mask <0x7F>; " \
+        "fi; " \
         "echo -e using eMMC;\0" \
     "sd_overlay=" \
         "fdt set /firmware/android boot_devices sdhci-tegra.0;\0" \
     "touch_overlay=" \
         "setenv bootargs ${bootargs} \"ftm4.skip_tuning=1\";\0" \
+    "vht80_overlay=" \
+        "setenv bootargs ${bootargs} \"brcmfmac.vht_mask=12\";\0" \
+    "ddr200_overlay=" \
+        "echo SD DDR200 mode enabled; " \
+        "fdt set /sdhci@700b0000 enable-ddr200;\0" \
     "usb3_overlay=" \
-        "echo -e USB3 disabled; " \
+        "echo USB3 disabled; " \
         "fdt get value DHANDLE_USB2 /xusb_padctl@7009f000/pads/usb2/lanes/usb2-0 phandle; " \
         "fdt set /xusb@70090000 phys <$DHANDLE_USB2>; " \
         "fdt set /xusb@70090000 phy-names usb2-0; " \
@@ -211,6 +253,9 @@
         "fdt set /serial@70006040/joyconr status disabled; " \
         "fdt set /serial@70006200 status disabled; " \
         "fdt set /serial@70006200/joyconl status disabled;\0" \
+    "alarms_enable_overlay=" \
+        "echo -e Wakeup alarms enabled; " \
+        "fdt set /rtc nvidia,pmc-wakeup <&tegra_pmc PMC_WAKE_TYPE_EVENT 16 PMC_TRIGGER_TYPE_HIGH>;\0" \
     "vali_vlim_overlay=" \
         "echo VALI: voltage limits [${VLIM}, ${SOCLIM}]; " \
         "if test \"${VLIM}\" != 1070; then " \
@@ -225,6 +270,21 @@
             "fdt set /i2c@7000c000/battery-charger@6b/charger ti,fast-charge-current-limit-milliamp <0x600>; " \
             "fdt set /i2c@7000c000/battery-charger@6b/charger ti,charge-current-limit <0x200 0x240 0x600 0x600>; " \
         "fi;\0" \
+    "sio_calib_overlay=" \
+        "if load mmc 1:1 ${env_staging_addr} /switchroot/switch.cal; then; " \
+            "env import -t -r ${env_staging_addr} ${filesize}; " \
+            "echo Sio Calibration set; " \
+            "fdt set /serial@70006200/sio sio-stick-cal-l <$lite_cal_lx_lof $lite_cal_lx_cnt $lite_cal_lx_rof $lite_cal_ly_dof $lite_cal_ly_cnt $lite_cal_ly_uof>; " \
+            "fdt set /serial@70006200/sio sio-stick-cal-r <$lite_cal_rx_lof $lite_cal_rx_cnt $lite_cal_rx_rof $lite_cal_ry_dof $lite_cal_ry_cnt $lite_cal_ry_uof>; " \
+            "fdt set /serial@70006200/sio sio-acc-cal <$acc_cal_off_x $acc_cal_off_y $acc_cal_off_z $acc_cal_scl_x $acc_cal_scl_y $acc_cal_scl_z>; " \
+            "fdt set /serial@70006200/sio sio-gyr-cal <$gyr_cal_off_x $gyr_cal_off_y $gyr_cal_off_z $gyr_cal_scl_x $gyr_cal_scl_y $gyr_cal_scl_z>; " \
+        "fi;\0" \
+    "devboard_overlay=" \
+        "echo -e GPU 15A Regulator enabled; " \
+        "fdt set /i2c@7000d000/max77812@33 reg <0x31>; " \
+        "fdt set /i2c@7000d000/max77812@33/m3vout status disabled; " \
+        "fdt set /i2c@7000d000/fan53528@52 status okay; " \
+        "fdt set /dvfs nvidia,gpu-max-volt-mv <0x3B6>;\0" \
     "display_overlay=" \
         "if   test ${display_id} = f20;  then echo Display is INN 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-i-720p-6-2 phandle; " \
         "elif test ${display_id} = f30;  then echo Display is AUO 6.2; fdt get value DHANDLE /host1x@50000000/dsi/panel-a-720p-6-2 phandle; " \
@@ -245,7 +305,7 @@
         "fdt resize 16384\0" \
     "bootcmd_common=" \
         "run set_variant; " \
-        "setenv bootargs init=/init nvdec_enabled=0 pcie_aspm=off vpr_resize tegra_fbmem=0x800000@0xf5a00000 loglevel=8; " \
+        "setenv bootargs init=/init nvdec_enabled=0 pcie_aspm=off vpr_resize tegra_fbmem=0x400000@0xf5a00000 loglevel=8; " \
         "setenv bootargs ${bootargs} androidboot.selinux=permissive firmware_class.path=/vendor/firmware; " \
         "setenv bootargs ${bootargs} pmc_r2p.action=${r2p_action} pmc_r2p.enabled=1 pmc_r2p.param1=${autoboot} pmc_r2p.param2=${autoboot_list}; " \
         "setenv bootargs ${bootargs} fbcon=map:${fbconsole} consoleblank=0; " \
@@ -292,16 +352,21 @@
             "setenv bootargs \"${bootargs} ${no_args}\"; " \
         "fi; " \
         "if test ${4k60_disable} = 1; then run 4k60_overlay; fi; " \
-        "if test ${sd_1bit} = 1; then run 1bit_overlay; fi; " \
+        "if test \"${sd_1bit}\" = 1; then run 1bit_overlay; fi; " \
         "if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
         "if test ${t210b01} = 1 -a ${gpu_dvfsc} = 1; then run dvfsc_enable; else setenv bootargs ${bootargs} androidboot.dvfsc=0; fi; " \
         "if test ${t210b01} = 0 -a ${oc} -gt 0; then run odin_oc_enable; fi; " \
         "if test ${t210b01} = 1 -a ${limit_gpu_clk} = 1; then run gpu_limit_overlay; else setenv bootargs ${bootargs} androidboot.gpulim=0; fi; " \
+        "if test ${t210b01} = 1 -a -n \"${pmic_type}\" -a ${pmic_type} = 1; then run devboard_overlay; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
+        "if test ${sku} = 2; then run sio_calib_overlay; fi; " \
         "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
-        "if test ${usb3_enable} = 0; then run usb3_overlay; else echo USB3 enabled; fi; " \
+        "if test ${wifi_disable_vht80} = 1; then run vht80_overlay; fi; " \
+        "if test ${alarms_enable} = 1; then run alarms_enable_overlay; fi; " \
+        "if test \"${loader_rev}\" != 0 -a ${ddr200_enable} = 1; then run ddr200_overlay; fi; " \
+        "if test ${usb3_enable} = 0; then run usb3_overlay; else echo -e USB3 enabled; fi; " \
         /* Try to grab address from joycons, otherwise use defaults */ \
         "run address_parse; " \
         "if test ! -n ${wifi_mac}; then " \
