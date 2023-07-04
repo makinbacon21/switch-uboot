@@ -94,51 +94,9 @@
     "address_parse=" \
         "host_mac_addr=0xff; " \
         /* load mac address info file from sd */ \
-        "if fatload mmc 1:1 0x90000000 switchroot/joycon_mac.bin; then " \
-            "if itest.b *0x90000000 == 0x01; then " \
-                "echo Left JoyCon is available; " \
-                "host_mac_addr=0x90000007; " \
-            "else " \
-                "echo -e Left JoyCon pairing info is not available!; " \
-            "fi; " \
-            "if itest.b *0x9000001d == 0x02; then " \
-                "echo Right JoyCon is available; " \
-                "host_mac_addr=0x90000024; " \
-            "else " \
-                "echo -e Right JoyCon pairing info is not available!; " \
-            "fi; " \
-        "fi; " \
-        "if itest.b $host_mac_addr == 0xff; then " \
-            "echo -e No JoyCons available; " \
-        "else " \
-            "echo Generating MAC addresses with JoyCon pairing info; " \
-            "bt_mac_gen=\"\"; " \
-            "sep=\"\"; " \
-            "for i in 0 1 2 3 4 5 ; do " \
-                "setexpr x $host_mac_addr + $i; " \
-                "setexpr.b b *$x; " \
-                "if itest $b <= f; then " \
-                    /* There is no way to have leading zeros, so do this hack */ \
-                    "bt_mac_gen=\"${bt_mac_gen}${sep}0${b}\"; " \
-                    "echo bt_mac_gen (a): ${bt_mac_gen}; " \
-                "else " \
-                    "bt_mac_gen=\"${bt_mac_gen}${sep}${b}\"; " \
-                    "echo bt_mac_gen (b): ${bt_mac_gen}; " \
-                "fi; " \
-                "sep=\":\"; " \
-            "done; " \
-            "setexpr.b last_byte *0x90000005; " \
-            "if itest $last_byte == 0xFF; then " \
-                /* wrap around case */ \
-                "setexpr wifi_mac_gen gsub \"(.*:.*:.*:.*:.*:).*\" \"\\100\" $bt_mac_gen; " \
-            "else " \
-                "setexpr.b wb $last_byte + 1; " \
-                "if itest $wb <= f; then " \
-                    "setexpr wifi_mac_gen gsub \"(.*:.*:.*:.*:.*:).*\" \"\\10$wb\" $bt_mac_gen; " \
-                "else " \
-                    "setexpr wifi_mac_gen gsub \"(.*:.*:.*:.*:.*:).*\" \"\\1$wb\" $bt_mac_gen; " \
-                "fi; " \
-            "fi; " \
+        "if fatload mmc 1:1 0x90000000 switchroot/joycon_mac.ini; then " \
+            "echo Parsing JoyCon pairing info; " \
+            "ini \"joycon_00\" 0x90000000; " \
         "fi;\0" \
     "preboot=" \
         "if itest.l *0xA9FBFFFC == 0x33334C42; then " \
@@ -369,11 +327,12 @@
         "if test ${usb3_enable} = 0; then run usb3_overlay; else echo -e USB3 enabled; fi; " \
         /* Try to grab address from joycons, otherwise use defaults */ \
         "run address_parse; " \
+        /* We only get BT MAC from JoyCons, so use BT MAC with FF as the last byte for Wi-Fi */ \
         "if test ! -n ${wifi_mac}; then " \
-            "if test -n ${wifi_mac_gen}; then setenv wifi_mac ${wifi_mac_gen}; else setenv wifi_mac ${device_wifi_mac}; fi;" \
+            "if test -n ${host}; then setexpr wifi_mac sub \"\\:..$\" \":FF\" ${host}; else setenv wifi_mac ${device_wifi_mac}; fi;" \
         "fi; " \
         "if test ! -n ${bt_mac}; then " \
-            "if test -n ${bt_mac_gen}; then setenv bt_mac ${bt_mac_gen}; else setenv bt_mac ${device_bt_mac}; fi;" \
+            "if test -n ${host}; then setenv bt_mac ${host}; else setenv bt_mac ${device_bt_mac}; fi;" \
         "fi; " \
         "echo BT MAC: ${bt_mac}; " \
         "echo WF MAC: ${wifi_mac}; " \
