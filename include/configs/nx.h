@@ -64,7 +64,8 @@
         "test -n ${wifi_disable_vht80}   || setenv wifi_disable_vht80 0; " \
         "test -n ${alarms_enable}        || setenv alarms_enable 0; " \
         "test -n ${sio_wakeup_disable}   || setenv sio_wakeup_disable 0; " \
-        "test -n ${ddr200_enable}        || setenv ddr200_enable 0;\0" \
+        "test -n ${ddr200_enable}        || setenv ddr200_enable 0;" \
+        "test -n ${cec_disable}          || setenv cec_disable 0;\0" \
     "setup_calib=" \
         /* IMU */ \
         "test -n ${acc_cal_off_x}        || setenv acc_cal_off_x 0x0; " \
@@ -156,6 +157,9 @@
     "ddr200_overlay=" \
         "echo SD DDR200 mode enabled; " \
         "fdt set /sdhci@700b0000 enable-ddr200;\0" \
+    "cec_disable_overlay=" \
+        "echo HDMI-CEC disabled; " \
+        "setenv bootargs ${bootargs} \"cec_disable=1 androidboot.cec_disable=1\";\0" \
     "usb3_overlay=" \
         "echo USB3 disabled; " \
         "fdt get value DHANDLE_USB2 /xusb_padctl@7009f000/pads/usb2/lanes/usb2-0 phandle; " \
@@ -321,6 +325,7 @@
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
         "if test ${sku} = 2; then run sio_calib_overlay; fi; " \
         "if test ${sku} = 2 -a ${sio_wakeup_disable} = 1; then fdt set /serial@70006200/sio nvidia,pmc-wakeup <0>; fi; " \
+        "if test ${sku} = 2 -o ${cec_disable} = 1; then run cec_disable_overlay; fi; " \
         "if test ${jc_rail_disable} = 1; then run jc_rail_overlay; fi; " \
         "if test ${touch_skip_tuning} = 1; then run touch_overlay; fi; " \
         "if test ${wifi_disable_vht80} = 1; then run vht80_overlay; fi; " \
