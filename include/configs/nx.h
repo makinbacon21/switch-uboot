@@ -200,9 +200,6 @@
         "else; " \
             "setenv bootargs ${bootargs} \"speedo_tegra210.gspd_id=3\"; " \
         "fi;\0" \
-    "odin_oc_enable=" \
-        "echo -e T210 Super Overclock enabled; " \
-        "fdt set /cpufreq/cpu-scaling-data max-frequency <0x1FE7F8>;\0" \
     "gpu_limit_overlay=" \
         /* If not Vali set GPU hard limit to 1075 MHz. */ \
         "if test ${sku} != 2; then " \
@@ -322,7 +319,6 @@
         "if test ${sku} != 3; then run display_overlay; fi; " \
         "if test ${t210b01} = 1 -a ${dvfsb} = 1; then run dvfs_enable; else setenv bootargs ${bootargs} androidboot.dvfsb=0; fi; " \
         "if test ${t210b01} = 1 -a ${gpu_dvfsc} = 1; then run dvfsc_enable; else setenv bootargs ${bootargs} androidboot.dvfsc=0; fi; " \
-        "if test ${t210b01} = 0 -a ${oc} -gt 0; then run odin_oc_enable; fi; " \
         "if test ${t210b01} = 1 -a ${limit_gpu_clk} = 1; then run gpu_limit_overlay; else setenv bootargs ${bootargs} androidboot.gpulim=0; fi; " \
         "if test ${t210b01} = 1 -a -n \"${pmic_type}\" -a ${pmic_type} = 1; then run devboard_overlay; fi; " \
         "if test ${t210b01} = 1 -a \"${loader_rev}\" > 1; then setenv bootargs ${bootargs} \"latency_allowance.ptsa_rework\"; fi; " \
