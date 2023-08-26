@@ -322,6 +322,7 @@
         "if test ${t210b01} = 0 -a ${oc} -gt 0; then run odin_oc_enable; fi; " \
         "if test ${t210b01} = 1 -a ${limit_gpu_clk} = 1; then run gpu_limit_overlay; else setenv bootargs ${bootargs} androidboot.gpulim=0; fi; " \
         "if test ${t210b01} = 1 -a -n \"${pmic_type}\" -a ${pmic_type} = 1; then run devboard_overlay; fi; " \
+        "if test ${t210b01} = 1 -a \"${loader_rev}\" > 1; then setenv bootargs ${bootargs} \"latency_allowance.ptsa_rework\"; fi; " \
         "if test ${sku} = 2 -a -n \"${VLIM}\"; then run vali_vlim_overlay; fi; " \
         "if test ${sku} = 2; then run sio_calib_overlay; fi; " \
         "if test ${sku} = 2 -a ${sio_wakeup_disable} = 1; then fdt set /serial@70006200/sio nvidia,pmc-wakeup <0>; fi; " \
