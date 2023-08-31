@@ -216,8 +216,9 @@
     "alarms_enable_overlay=" \
         "echo -e Wakeup alarms enabled; " \
         "fdt set /rtc nvidia,pmc-wakeup <&tegra_pmc PMC_WAKE_TYPE_EVENT 16 PMC_TRIGGER_TYPE_HIGH>; " \
-        "fdt set /serial@70006300/bluetooth host-wakeup-gpios <&gpio TEGRA_GPIO(H, 5) GPIO_ACTIVE_LOW>; " \
-        "fdt set /serial@70006300/bluetooth nvidia,pmc-wakeup <&tegra_pmc PMC_WAKE_TYPE_EVENT 52 PMC_TRIGGER_TYPE_LOW>; " \
+        "fdt set /bluedroid_pm bluedroid_pm,host-wake-gpio <&gpio TEGRA_GPIO(H, 5) 0>; " \
+        "fdt set /bluedroid_pm interrupt-parent <&gpio>; " \
+        "fdt set /bluedroid_pm interrupts <TEGRA_GPIO(H, 5) 0x01>; " \
         "fdt set /brcmfmac_pcie_wlan nvidia,pmc-wakeup <&tegra_pmc PMC_WAKE_TYPE_EVENT 8 PMC_TRIGGER_TYPE_HIGH>;\0" \
     "vali_vlim_overlay=" \
         "echo VALI: voltage limits [${VLIM}, ${SOCLIM}]; " \
